@@ -2,14 +2,14 @@ const jwt = require("jsonwebtoken");
 const { ACCESS_TOKEN_SECRET, ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_SECRET, REFRESH_TOKEN_EXPIRY } = process.env;
 
 // Generate access token
-const generateAccessToken = (payload) => {
-    if(!payload) return null;
+const generateAccessToken = (user) => {
+    if(!user) return null;
     try 
     {
         return jwt.sign({
-            _id:payload._id,
-            role:payload.role,
-            profiles: payload.profiles || {}
+            _id: user._id,
+            email :user.email,
+            role: user.role,
         }, ACCESS_TOKEN_SECRET, { expiresIn:ACCESS_TOKEN_EXPIRY });
     } 
     catch(error) 
