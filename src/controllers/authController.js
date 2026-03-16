@@ -10,7 +10,7 @@ const { userRegistrationCheckValidator } = require("../validations/userValidator
 // User registration check
 const userRegistrationCheck = asyncHandler(async (request, response) => {
     // Get validated payload
-    const { email } = validatePayload(userRegistrationCheckValidator, request.body);
+    const { email } = validatePayload(userRegistrationCheckValidator, request.body) || {};
 
     // Check email
     const user = await User.findOne({ email }).select("email status").lean();
@@ -34,7 +34,7 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
 // Send OTP
 const sendOTP = asyncHandler(async (request, response) => {
     // Get validated payload
-    const { email } = validatePayload(userRegistrationCheckValidator, request.body);
+    const { email } = validatePayload(userRegistrationCheckValidator, request.body) || {};
 
     // Generate OTP token
     const { code:accountVerificationToken } = generateCode(6);
@@ -74,4 +74,25 @@ const sendOTP = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, null, "We have sent you an OTP to your email")); 
 });
 
-module.exports = { userRegistrationCheck, sendOTP };
+// Verify OTP
+const verifyOTP = asyncHandler(async (request, response) => {
+    const { accountVerificationToken } = request.body || {};
+
+    // Find user
+    const user = await User.findOne(accountVerificationToken);
+    if(!user) throw new ApiError(400, "Invalid OTP!");
+
+    // Verify otp token
+    if(user.accountVerificationTokenExpires < Date.now()) throw new ApiError(400, "This OTP has been expired! Request new one");
+
+    // Save to db
+    user.accountVerificationToken = null;
+    user.accountVerificationTokenExpires = null;
+    user.status = "approved";
+    await user.save();
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, user.email, "Your account has been activated"));
+});
+
+module.exports = { userRegistrationCheck, sendOTP, verifyOTP };
