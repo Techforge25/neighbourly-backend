@@ -36,27 +36,32 @@ const sendOTP = asyncHandler(async (request, response) => {
     // Get validated payload
     const { email } = validatePayload(userRegistrationCheckValidator, request.body);
 
-    // Check email
-    const user = await User.findOne({ email }).select("email status").lean();
-    let createUser = null;
-    if(!user)
-    {
-        // Create user with email
-        createUser = await User.create({ email });
-        if(!createUser) throw new ApiError(500, "Failed to create user account");
-    }
-
-    // Account already registered
-    if(user.status !== "pending") throw new ApiError(400, "Cannot send OTP to already registered email");
-
     // Generate OTP token
     const { code:accountVerificationToken } = generateCode(6);
-    if(!accountVerificationToken) throw new ApiError(500, "Failed to generate OTP");  
+    if(!accountVerificationToken) throw new ApiError(500, "Failed to generate OTP");     
 
-    // Save to user
-    createUser.accountVerificationToken = accountVerificationToken;
-    createUser.accountVerificationTokenExpires = Date.now() + 1 * 60 * 1000;
-    await createUser.save();
+    // Check email
+    const user = await User.findOne({ email }).select("email status accountVerificationToken accountVerificationTokenExpires");
+    if(user)
+    {
+        // Already registered (Approved)
+        if(user.status !== "pending") throw new ApiError(400, "Cannot send OTP to already registered email");
+
+        // Update user with new OTP token
+        user.accountVerificationToken = accountVerificationToken;
+        user.accountVerificationTokenExpires = Date.now() + 1 * 60 * 1000;
+        await user.save();
+    }
+    else
+    {
+        // Create user with email
+        const createUser = await User.create({ 
+            email,
+            accountVerificationToken,
+            accountVerificationTokenExpires: Date.now() + 1 * 60 * 1000
+        });
+        if(!createUser) throw new ApiError(500, "Failed to create user account");
+    }
 
     // Send email
     const result = await sendEmail(email, "Account Activation Token", 
