@@ -1,4 +1,7 @@
+const generateCode = require("../../utils/generateCode");
 const User = require("../models/userModel");
+const sendEmail = require("../service/email");
+const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const validatePayload = require("../utils/validatePayload");
@@ -10,16 +13,60 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
     const { email } = validatePayload(userRegistrationCheckValidator, request.body);
 
     // Check email
-    const user = await User.findOne({ email }).select("email").lean();
-    if(!user)
+    const user = await User.findOne({ email }).select("email status").lean();
+    if(user)
     {
-        // Account creation required
-        return response.status(200)
-        .json(new ApiResponse(200, { email, accountCreationRequired:true }, "You need to create your account"));
+        if(user.status === "pending")
+        {
+            throw new ApiError(400, "Your account is not activated yet. Please verify your identity via OTP.");
+        }
+        else
+        {
+            return response.status(200)
+            .json(new ApiResponse(200, { email:user.email, accountCreationRequired:false }, "You can see recommendations"));
+        }        
     }
 
     // Response
-    return response.status(200).json(new ApiResponse(200, { email:user.email, accountCreationRequired:false }, "You can see recommendations"));
+    return response.status(200).json(new ApiResponse(200, { email, accountCreationRequired:true }, "You need to create your account"));
 });
 
-module.exports = { userRegistrationCheck };
+// Send OTP
+const sendOTP = asyncHandler(async (request, response) => {
+    // Get validated payload
+    const { email } = validatePayload(userRegistrationCheckValidator, request.body);
+
+    // Check email
+    const user = await User.findOne({ email }).select("email status").lean();
+    let createUser = null;
+    if(!user)
+    {
+        // Create user with email
+        createUser = await User.create({ email });
+        if(!createUser) throw new ApiError(500, "Failed to create user account");
+    }
+
+    // Account already registered
+    if(user.status !== "pending") throw new ApiError(400, "Cannot send OTP to already registered email");
+
+    // Generate OTP token
+    const { code:accountVerificationToken } = generateCode(6);
+    if(!accountVerificationToken) throw new ApiError(500, "Failed to generate OTP");  
+
+    // Save to user
+    createUser.accountVerificationToken = accountVerificationToken;
+    createUser.accountVerificationTokenExpires = Date.now() + 1 * 60 * 1000;
+    await createUser.save();
+
+    // Send email
+    const result = await sendEmail(email, "Account Activation Token", 
+    `<p>Your OTP Token is: <strong>${accountVerificationToken}</strong></p>
+    <p>Please use this token to activate your account.</p>`
+    );
+    if(!result) throw new ApiError(500, "Failed to send account activation token");
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, null, "We have sent you an OTP to your email")); 
+});
+
+module.exports = { userRegistrationCheck, sendOTP };
