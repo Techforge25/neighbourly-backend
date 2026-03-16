@@ -8,6 +8,7 @@ const userSchema = new Schema({
     contact: { type:String, trim:true, required:true, unique:[true, "This contact number is already taken"] },
     streetName: { type:String, trim:true, required:true },
     address: { type:String, trim:true, required:true },
+    status: { type:String, trim:true, enum:["pending", "approved"], default:"pending" },
 
     // Account verification otp
     accountVerificationToken: { type:String, default:null },
