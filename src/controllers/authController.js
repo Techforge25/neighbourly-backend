@@ -79,7 +79,7 @@ const verifyOTP = asyncHandler(async (request, response) => {
     const { accountVerificationToken } = request.body || {};
 
     // Find user
-    const user = await User.findOne(accountVerificationToken);
+    const user = await User.findOne({ accountVerificationToken });
     if(!user) throw new ApiError(400, "Invalid OTP!");
 
     // Verify otp token
