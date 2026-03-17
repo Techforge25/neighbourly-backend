@@ -13,10 +13,10 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
     const { email } = validatePayload(userRegistrationCheckValidator, request.body) || {};
 
     // Check email
-    const user = await User.findOne({ email }).select("email status").lean();
+    const user = await User.findOne({ email }).select("email isVerified").lean();
     if(user)
     {
-        if(user.status === "pending")
+        if(!user.isVerified)
         {
             throw new ApiError(400, "Your account is not activated yet. Please verify your identity via OTP.");
         }
@@ -41,11 +41,11 @@ const sendOTP = asyncHandler(async (request, response) => {
     if(!accountVerificationToken) throw new ApiError(500, "Failed to generate OTP");     
 
     // Check email
-    const user = await User.findOne({ email }).select("email status accountVerificationToken accountVerificationTokenExpires");
+    const user = await User.findOne({ email }).select("email isVerified accountVerificationToken accountVerificationTokenExpires");
     if(user)
     {
-        // Already registered (Approved)
-        if(user.status !== "pending") throw new ApiError(400, "Cannot send OTP to already registered email");
+        // Already registered
+        if(user.isVerified) throw new ApiError(400, "Cannot send OTP to already registered email");
 
         // Update user with new OTP token
         user.accountVerificationToken = accountVerificationToken;
@@ -88,7 +88,7 @@ const verifyOTP = asyncHandler(async (request, response) => {
     // Save to db
     user.accountVerificationToken = null;
     user.accountVerificationTokenExpires = null;
-    user.status = "approved";
+    user.isVerified = true;
     await user.save();
 
     // Response
