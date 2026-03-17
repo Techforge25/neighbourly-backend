@@ -149,7 +149,7 @@ const refreshAccessToken = asyncHandler(async (request, response) => {
     return response.status(200)
     .cookie("accessToken", accessToken, cookieOptions)
     .cookie("refreshToken", refreshToken, cookieOptions)
-    .json(new ApiResponse(200, null, "Access & resfresh tokens have been issued"));
+    .json(new ApiResponse(200, null, "Access & refresh tokens have been issued"));
 });
 
 // User auth check

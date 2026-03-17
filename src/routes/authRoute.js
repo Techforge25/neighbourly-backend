@@ -15,7 +15,7 @@ authRouter.route("/user/send-otp").post(sendOTP);
 authRouter.route("/user/verify-otp").post(verifyOTP);
 
 // Refresh token
-authRouter.route("/refreshToken").get(refreshAccessToken);
+authRouter.route("/user/refreshToken").get(refreshAccessToken);
 
 // User auth check
 authRouter.route("/user/me").get(authentication, userAuthCheck);
