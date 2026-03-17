@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const ApiError = require("./ApiError");
 const { ACCESS_TOKEN_SECRET, ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_SECRET, REFRESH_TOKEN_EXPIRY } = process.env;
 
 // Generate access token
@@ -6,11 +7,14 @@ const generateAccessToken = (user) => {
     if(!user) return null;
     try 
     {
-        return jwt.sign({
+        const token = jwt.sign({
             _id: user._id,
-            email :user.email,
+            email: user.email,
             role: user.role,
         }, ACCESS_TOKEN_SECRET, { expiresIn:ACCESS_TOKEN_EXPIRY });
+        if(!token) throw new ApiError(500, "Failed to generate access token");
+
+        return token;
     } 
     catch(error) 
     {
@@ -53,9 +57,12 @@ const generateRefreshToken = (payload) => {
     if(!payload) return null;
     try 
     {
-        return jwt.sign({
+        const token = jwt.sign({
             _id:payload._id,
         }, REFRESH_TOKEN_SECRET, { expiresIn:REFRESH_TOKEN_EXPIRY });
+        if(!token) throw new ApiError(500, "Failed to generate refresh token");
+
+        return token;
     } 
     catch(error) 
     {
