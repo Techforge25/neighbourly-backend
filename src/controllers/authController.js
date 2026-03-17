@@ -6,6 +6,8 @@ const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const validatePayload = require("../utils/validatePayload");
 const { userRegistrationCheckValidator } = require("../validations/userValidator");
+const { generateAccessToken, generateRefreshToken } = require("../utils/accessToken");
+const { cookieOptions } = require("../constants");
 
 // User registration check
 const userRegistrationCheck = asyncHandler(async (request, response) => {
@@ -22,7 +24,14 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
         }
         else
         {
+            // Generate access token
+            const accessToken = generateAccessToken(user);
+            const refreshToken = generateRefreshToken({ _id:user._id });
+
+            // Response
             return response.status(200)
+            .cookie("accessToken", accessToken, cookieOptions)
+            .cookie("refreshToken", refreshToken, cookieOptions)
             .json(new ApiResponse(200, { email:user.email, accountCreationRequired:false }, "You can see recommendations"));
         }        
     }
@@ -95,4 +104,12 @@ const verifyOTP = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, user.email, "Your account has been activated"));
 });
 
-module.exports = { userRegistrationCheck, sendOTP, verifyOTP };
+// User auth check
+const userAuthCheck = asyncHandler(async (request, response) => {
+    const { _id:userId, role } = request.user;
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, { userId, role }, "Authenticated!"));
+});
+
+module.exports = { userRegistrationCheck, sendOTP, verifyOTP, userAuthCheck };
