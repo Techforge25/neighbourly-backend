@@ -6,7 +6,7 @@ const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const validatePayload = require("../utils/validatePayload");
 const { userRegistrationCheckValidator } = require("../validations/userValidator");
-const { generateAccessToken, generateRefreshToken } = require("../utils/accessToken");
+const { generateAccessToken, generateRefreshToken, getRefreshToken, verifyRefreshToken } = require("../utils/accessToken");
 const { cookieOptions } = require("../constants");
 
 // User registration check
@@ -15,7 +15,7 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
     const { email } = validatePayload(userRegistrationCheckValidator, request.body) || {};
 
     // Check email
-    const user = await User.findOne({ email }).select("email isVerified").lean();
+    const user = await User.findOne({ email }).select("email isVerified refreshToken");
     if(user)
     {
         if(!user.isVerified)
@@ -24,9 +24,13 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
         }
         else
         {
-            // Generate access token
+            // Generate access & refresh tokens
             const accessToken = generateAccessToken(user);
-            const refreshToken = generateRefreshToken({ _id:user._id });
+            const refreshToken = generateRefreshToken(user);
+
+            // Save refresh token to db
+            user.refreshToken = refreshToken;
+            await user.save();
 
             // Response
             return response.status(200)
@@ -94,14 +98,58 @@ const verifyOTP = asyncHandler(async (request, response) => {
     // Verify otp token
     if(user.accountVerificationTokenExpires < Date.now()) throw new ApiError(400, "This OTP has been expired! Request new one");
 
+    // Generate access & refresh tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);    
+
     // Save to db
     user.accountVerificationToken = null;
     user.accountVerificationTokenExpires = null;
     user.isVerified = true;
+    user.refreshToken = refreshToken;
     await user.save();
 
     // Response
-    return response.status(200).json(new ApiResponse(200, user.email, "Your account has been activated"));
+    return response.status(200)
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)    
+    .json(new ApiResponse(200, user.email, "Your account has been activated"));
+});
+
+// Refresh access token
+const refreshAccessToken = asyncHandler(async (request, response) => {
+    // Get token
+    const token = getRefreshToken(request);
+    if(!token) throw new ApiError(401, "Unauthorized! Refresh token is missing");
+
+    // Verify refresh token
+    const payload = verifyRefreshToken(token);
+    if(!payload) throw new ApiError(401, "Unauthorized! Invalid refresh token");
+
+    // Find user
+    const user = await User.findById(payload._id).select("_id role refreshToken");
+    if(!user) throw new ApiError(404, "User not found associated with the provided refresh token");
+
+    // Compare tokens
+    if(user.refreshToken !== token) throw new ApiError(400, "Refresh token mismatch");
+
+    // Generate access & refresh tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // Validate
+    if(!accessToken) throw new ApiError(400, "Failed to re-generate access token");
+    if(!refreshToken) throw new ApiError(400, "Failed to re-generate refresh token");
+
+    // Save to db
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    // Response
+    return response.status(200)
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
+    .json(new ApiResponse(200, null, "Access & resfresh tokens have been issued"));
 });
 
 // User auth check
@@ -112,4 +160,4 @@ const userAuthCheck = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, { userId, role }, "Authenticated!"));
 });
 
-module.exports = { userRegistrationCheck, sendOTP, verifyOTP, userAuthCheck };
+module.exports = { userRegistrationCheck, sendOTP, verifyOTP, refreshAccessToken, userAuthCheck };
