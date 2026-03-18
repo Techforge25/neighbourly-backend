@@ -13,34 +13,41 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
     // Get validated payload
     const { email } = validatePayload(userRegistrationCheckValidator, request.body) || {};
 
-    // Check email
-    const user = await User.findOne({ email }).select("email isVerified refreshToken");
-    if(user)
+    // Get user
+    const user = await User.findOne({ email }).select("email isVerified status refreshToken");
+    if(!user)
     {
-        if(!user.isVerified)
-        {
-            throw new ApiError(400, "Your account is not activated yet. Please verify your identity via OTP.");
-        }
-        else
-        {
-            // Generate access & refresh tokens
-            const accessToken = generateAccessToken(user);
-            const refreshToken = generateRefreshToken(user);
-
-            // Save refresh token to db
-            user.refreshToken = refreshToken;
-            await user.save();
-
-            // Response
-            return response.status(200)
-            .cookie("accessToken", accessToken, cookieOptions)
-            .cookie("refreshToken", refreshToken, cookieOptions)
-            .json(new ApiResponse(200, { email:user.email, accountCreationRequired:false }, "You can see recommendations"));
-        }        
+        return response.status(200)
+        .json(new ApiResponse(200, { email, accountCreationRequired:true }, "You need to create your account"));
     }
 
+    // If not verified
+    if(!user.isVerified)
+    {
+        return response.status(200)
+        .json(new ApiResponse(200, { email, accountCreationRequired:false }, "Your account is not activated yet. Please verify your identity via OTP."));
+    }
+
+    // If not given any recommendations
+    if(user.status !== "approved")
+    {
+        return response.status(200)
+        .json(new ApiResponse(200, { email, accountCreationRequired:false }, "You need to give at least one recommendation"));
+    }    
+
+    // Generate access & refresh tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // Save refresh token to db
+    user.refreshToken = refreshToken;
+    await user.save();
+
     // Response
-    return response.status(200).json(new ApiResponse(200, { email, accountCreationRequired:true }, "You need to create your account"));
+    return response.status(200)
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
+    .json(new ApiResponse(200, { email:user.email, accountCreationRequired:false }, "You can see recommendations"));   
 });
 
 // Send OTP
