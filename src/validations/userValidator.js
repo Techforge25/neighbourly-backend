@@ -5,4 +5,10 @@ const userRegistrationCheckValidator = joi.object({
     email: joi.string().trim().lowercase().email().required().label("Email")
 });
 
-module.exports = { userRegistrationCheckValidator };
+// Verify otp validator
+const verifyOTPValidator = joi.object({
+    email: joi.string().trim().lowercase().email().required().label("Email"),
+    accountVerificationToken: joi.number().required().label("Verification code"),
+});
+
+module.exports = { userRegistrationCheckValidator, verifyOTPValidator };

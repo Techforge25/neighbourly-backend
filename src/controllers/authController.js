@@ -3,7 +3,7 @@ const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
 const validatePayload = require("../utils/validatePayload");
-const { userRegistrationCheckValidator } = require("../validations/userValidator");
+const { userRegistrationCheckValidator, verifyOTPValidator } = require("../validations/userValidator");
 const { generateAccessToken } = require("../utils/accessToken");
 const { cookieOptions } = require("../constants");
 const { generateOTP } = require("../utils/generateOTP");
@@ -46,22 +46,20 @@ const sendOTP = asyncHandler(async (request, response) => {
     await generateOTP(email);
 
     // Response
-    return response.status(200).json(new ApiResponse(200, null, "We have sent you an OTP to your email")); 
+    return response.status(200).json(new ApiResponse(200, email, "We have sent you an OTP to your email")); 
 });
 
 // Verify OTP
 const verifyOTP = asyncHandler(async (request, response) => {
-    const { accountVerificationToken } = request.body || {};
+    const { email, accountVerificationToken } = validatePayload(verifyOTPValidator, request.body) || {};
 
     // Find user
-    const user = await User.findOne({ accountVerificationToken });
-    if(!user) throw new ApiError(400, "Invalid OTP!");
+    const user = await User.findOne({ email });
+    if(!user) throw new ApiError(404, "User not found! Incorrect email provided");
 
     // Verify otp token
+    if(user.accountVerificationToken !== accountVerificationToken) throw new ApiError(400, "Invalid OTP");
     if(user.accountVerificationTokenExpires < Date.now()) throw new ApiError(400, "This OTP has been expired! Request new one");
-
-    // Generate access token
-    const accessToken = generateAccessToken(user);
 
     // Save to db
     user.accountVerificationToken = null;
@@ -69,10 +67,16 @@ const verifyOTP = asyncHandler(async (request, response) => {
     user.isVerified = true;
     await user.save();
 
+    // User flag
+    const isNewUser = Boolean(user.fullName);
+
+    // Generate access token
+    const accessToken = generateAccessToken(user);
+
     // Response
     return response.status(200)
     .cookie("accessToken", accessToken, cookieOptions)
-    .json(new ApiResponse(200, user.email, "Your account has been activated"));
+    .json(new ApiResponse(200, { email, isNewUser }, "Your account has been activated"));
 });
 
 // User auth check
