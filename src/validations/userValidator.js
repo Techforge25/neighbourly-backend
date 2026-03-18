@@ -8,7 +8,7 @@ const userRegistrationCheckValidator = joi.object({
 // Verify otp validator
 const verifyOTPValidator = joi.object({
     email: joi.string().trim().lowercase().email().required().label("Email"),
-    accountVerificationToken: joi.number().required().label("Verification code"),
+    accountVerificationToken: joi.string().required().label("Verification code"),
 });
 
 module.exports = { userRegistrationCheckValidator, verifyOTPValidator };
