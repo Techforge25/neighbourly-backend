@@ -14,7 +14,7 @@ const generateOTP = async (email) => {
         if(!accountVerificationToken) throw new ApiError(500, "Failed to generate OTP");     
 
         // Check email
-        const user = await User.findOne({ email }).select("email isVerified accountVerificationToken accountVerificationTokenExpires");
+        let user = await User.findOne({ email });
         if(user)
         {
             // Already registered
@@ -28,12 +28,12 @@ const generateOTP = async (email) => {
         else
         {
             // Create user with email
-            const createUser = await User.create({ 
+            user = await User.create({ 
                 email,
                 accountVerificationToken,
                 accountVerificationTokenExpires: Date.now() + 1 * 60 * 1000
             });
-            if(!createUser) throw new ApiError(500, "Failed to create user account");
+            if(!user) throw new ApiError(500, "Failed to create user account");
         } 
 
         // Send email
@@ -41,7 +41,7 @@ const generateOTP = async (email) => {
         `<p>Your OTP Token is: <strong>${accountVerificationToken}</strong></p>
         <p>Please use this token to activate your account.</p>`
         );
-        if(!result) throw new ApiError(500, "Failed to send account activation token");     
+        if(!result) throw new ApiError(500, "Failed to send account activation token");  
     }
     catch(error)
     {
