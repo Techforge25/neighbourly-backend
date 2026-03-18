@@ -11,6 +11,7 @@ const userSchema = new Schema({
 
     // Role and status
     role: { type:String, enum:["user"], default:"user" },
+    status: { type:String, enum:["pending", "approved"], default:"pending" },
     isVerified: { type:Boolean, default:false },
 
     // Account verification otp
