@@ -9,17 +9,13 @@ const userSchema = new Schema({
     streetName: { type:String, trim:true },
     address: { type:String, trim:true },
 
-    // Role and status
+    // Role and verification
     role: { type:String, enum:["user"], default:"user" },
-    status: { type:String, enum:["pending", "approved"], default:"pending" },
     isVerified: { type:Boolean, default:false },
 
     // Account verification otp
     accountVerificationToken: { type:String, default:null },
-    accountVerificationTokenExpires: { type:Date, default:null },
-
-    // Refresh token
-    refreshToken: { type:String, default:null }    
+    accountVerificationTokenExpires: { type:Date, default:null }  
 }, { timestamps:true });
 
 // Model
