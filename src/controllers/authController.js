@@ -6,47 +6,71 @@ const validatePayload = require("../utils/validatePayload");
 const { userRegistrationCheckValidator, verifyOTPValidator } = require("../validations/userValidator");
 const { generateAccessToken } = require("../utils/accessToken");
 const { cookieOptions } = require("../constants");
-const { generateOTP } = require("../utils/generateOTP");
+const generateCode = require("../../utils/generateCode");
+const sendEmail = require("../service/email");
 
 // User registration check
 const userRegistrationCheck = asyncHandler(async (request, response) => {
     // Get validated payload
     const { email } = validatePayload(userRegistrationCheckValidator, request.body) || {};
 
-    // Get user
-    const user = await User.findOne({ email }).select("email isVerified");
-    if(!user)
+    // Generate OTP token
+    const { code:accountVerificationToken } = generateCode(6);
+    if(!accountVerificationToken) throw new ApiError(500, "Failed to generate OTP");      
+
+    // Get user if exist
+    let user = await User.findOne({ email }).select("email isVerified sessionExpires");
+    if(user)
     {
-        return response.status(200)
-        .json(new ApiResponse(200, { email, accountCreationRequired:true }, "You need to create your account"));
+        // Update user with new OTP token
+        if(user.sessionExpires < Date.now())
+        {
+            user.accountVerificationToken = accountVerificationToken;
+            user.accountVerificationTokenExpires = Date.now() + 1 * 60 * 1000;
+            await user.save();
+        }
+        else
+        {
+            // Session expiry date
+            const sessionExpires = Date.now() + 24 * 60 * 60 * 1000;
+            
+            // Generate access token
+            const accessToken = generateAccessToken({
+                _id: user._id,
+                role: user.role,
+                sessionExpires: sessionExpires          
+            });
+
+            // Save session
+            user.sessionExpires = sessionExpires;         
+            await user.save();
+
+            // Response
+            return response.status(200)
+            .cookie("accessToken", accessToken)
+            .json(new ApiResponse(200, { email, OTPRequired:false }, "Authenticated"));
+        }
     }
-
-    // If not verified
-    if(!user.isVerified)
+    else
     {
-        return response.status(200)
-        .json(new ApiResponse(200, { email, accountCreationRequired:false }, "Your account is not activated yet. Please verify your identity via OTP."));
-    }  
+        // Create user with email
+        user = await User.create({ 
+            email,
+            accountVerificationToken,
+            accountVerificationTokenExpires: Date.now() + 1 * 60 * 1000
+        });
+        if(!user) throw new ApiError(500, "Failed to create user account");
+    } 
 
-    // Generate access token
-    const accessToken = generateAccessToken(user);
-
+    // Send email
+    const result = await sendEmail(email, "OTP Token", 
+    `<p>Your OTP Token is: <strong>${accountVerificationToken}</strong></p>
+    <p>Please use this token to access your account.</p>`
+    );
+    if(!result) throw new ApiError(500, "Failed to send account activation token"); 
+    
     // Response
-    return response.status(200)
-    .cookie("accessToken", accessToken, cookieOptions)
-    .json(new ApiResponse(200, { email:user.email, accountCreationRequired:false }, "You can see recommendations"));   
-});
-
-// Send OTP
-const sendOTP = asyncHandler(async (request, response) => {
-    // Get validated payload
-    const { email } = validatePayload(userRegistrationCheckValidator, request.body) || {};
-
-    // Generate OTP
-    await generateOTP(email);
-
-    // Response
-    return response.status(200).json(new ApiResponse(200, email, "We have sent you an OTP to your email")); 
+    return response.status(200).json(new ApiResponse(200, { email, OTPRequired:true }, "We have sent you an OTP to your email"));
 });
 
 // Verify OTP
@@ -61,17 +85,25 @@ const verifyOTP = asyncHandler(async (request, response) => {
     if(user.accountVerificationToken !== accountVerificationToken) throw new ApiError(400, "Invalid OTP");
     if(user.accountVerificationTokenExpires < Date.now()) throw new ApiError(400, "This OTP has been expired! Request new one");
 
+    // Session expiry date
+    const sessionExpires = Date.now() + 24 * 60 * 60 * 1000;
+    
+    // Generate access token
+    const accessToken = generateAccessToken({
+        _id: user._id,
+        role: user.role,
+        sessionExpires: sessionExpires          
+    });
+
     // Save to db
     user.accountVerificationToken = null;
     user.accountVerificationTokenExpires = null;
-    user.isVerified = true;
+    user.isVerified = true;    
+    user.sessionExpires = sessionExpires;
     await user.save();
 
     // User flag
     const isNewUser = Boolean(user.fullName);
-
-    // Generate access token
-    const accessToken = generateAccessToken(user);
 
     // Response
     return response.status(200)
@@ -87,4 +119,4 @@ const userAuthCheck = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, { userId, role }, "Authenticated!"));
 });
 
-module.exports = { userRegistrationCheck, sendOTP, verifyOTP, userAuthCheck };
+module.exports = { userRegistrationCheck, verifyOTP, userAuthCheck };
