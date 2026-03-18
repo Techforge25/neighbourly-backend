@@ -23,7 +23,7 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
     if(user)
     {
         // Update user with new OTP token
-        if(user.sessionExpires < Date.now())
+        if(!user.isVerified)
         {
             user.accountVerificationToken = accountVerificationToken;
             user.accountVerificationTokenExpires = Date.now() + 1 * 60 * 1000;
