@@ -103,7 +103,7 @@ const verifyOTP = asyncHandler(async (request, response) => {
     await user.save();
 
     // User flag
-    const isNewUser = Boolean(user.fullName);
+    const isNewUser = Boolean(!user.fullName);
 
     // Response
     return response.status(200)
