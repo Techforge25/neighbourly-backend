@@ -13,7 +13,7 @@ const authentication = asyncHandler(async (request, response, next) => {
     if(!user) throw new ApiError(401, "Invalid access token! Please verify your identity via OTP");
 
     // Check session expiry
-    if(user.sessionExpires < Date.now())
+    if(new Date(user.sessionExpires) < Date.now())
     {
         // Expire session
         const updateUser = await User.findByIdAndUpdate(
