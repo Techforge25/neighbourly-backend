@@ -11,7 +11,7 @@ const recommendationSchema = new Schema({
 
     // Other info
     website: { type:String, trim:true },
-    reasonsOfRecommendations:{ type:[String] }
+    reasonsOfRecommendation:{ type:[String] }
 }, { timestamps:true });
 
 // Model
