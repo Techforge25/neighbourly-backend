@@ -19,7 +19,7 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
     if(!accountVerificationToken) throw new ApiError(500, "Failed to generate OTP");      
 
     // Get user if exist
-    let user = await User.findOne({ email }).select("email isVerified sessionExpires");
+    let user = await User.findOne({ email }).select("fullName email isVerified sessionExpires");
     if(user)
     {
         // Update user with new OTP token
@@ -45,10 +45,13 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
             user.sessionExpires = sessionExpires;         
             await user.save();
 
+            // User flag
+            const isNewUser = Boolean(!user.fullName);
+
             // Response
             return response.status(200)
             .cookie("accessToken", accessToken)
-            .json(new ApiResponse(200, { email, OTPRequired:false }, "Authenticated"));
+            .json(new ApiResponse(200, { email, OTPRequired:false, isNewUser }, "Authenticated"));
         }
     }
     else
