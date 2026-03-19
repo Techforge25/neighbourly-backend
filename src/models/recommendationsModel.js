@@ -2,6 +2,9 @@ const { Schema, model } = require("mongoose");
 
 // Schema
 const recommendationSchema = new Schema({
+    // User reference
+    userId:{ type:Schema.Types.ObjectId, ref:"User" },
+
     // Basic info
     personName: { type:String, trim:true, required:true },
     businessName: { type:String, trim:true, required:true },
