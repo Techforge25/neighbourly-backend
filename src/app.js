@@ -18,9 +18,11 @@ app.use(compression());
 
 // Import Routes
 const authRouter = require("./routes/authRoute");
+const recommendationRouter = require("./routes/recommendationRoute");
 
 // Registered Routes
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/recommendation", recommendationRouter);
 
 // API status route
 app.get("/", (request, response) => response.send(`Neighbourly backend-server is up and running at port ${port}`));
