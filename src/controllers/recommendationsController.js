@@ -1,0 +1,68 @@
+const Recommendation = require("../models/recommendationsModel");
+const User = require("../models/userModel");
+const ApiError = require("../utils/ApiError");
+const ApiResponse = require("../utils/ApiResponse");
+const asyncHandler = require("../utils/asyncHandler");
+const validatePayload = require("../utils/validatePayload");
+const { createRecommendationValidator, createRecommendationWithUserInfoValidator } = require("../validations/recommendationValidator");
+
+// Create recommendation
+const createRecommendation = asyncHandler(async (request, response) => {
+    // Get user
+    const userId = request.user._id;
+    const user = await User.findById(userId).select("_id").lean();
+    if(!user) throw new ApiError(404, "User not found!");
+
+    // Get validated payload
+    const { personName, businessName, contact, serviceType, location, 
+    website, reasonsOfRecommendation } = validatePayload(createRecommendationValidator, request.body);
+
+    // Save to db
+    const recommendation = await Recommendation.create({
+        userId, personName, businessName, contact,
+        serviceType, location, website, reasonsOfRecommendation
+    });
+    if(!recommendation) throw new ApiError(500, "Failed to create recommendation");
+
+    // Response
+    return response.status(201).json(new ApiResponse(201, null, "Recommendation has been created"));
+});
+
+// Create recommendation
+const createRecommendationWithUserInfo = asyncHandler(async (request, response) => {
+    // Get user
+    const userId = request.user._id;
+    const user = await User.findById(userId);
+    if(!user) throw new ApiError(404, "User not found!");
+
+    // Get validated payload
+    const { 
+        // User info
+        fullName, userContact, userStreet, userAddress,
+
+        // Business info
+        personName, businessName, businessContact, serviceType, location, website, reasonsOfRecommendation
+    } = validatePayload(createRecommendationWithUserInfoValidator, request.body);
+
+    // Save user
+    if(!user.fullName && !user.contact)
+    {
+        user.fullName = fullName;
+        user.contact = userContact;
+        user.streetName = userStreet;
+        user.address = userAddress;
+        await user.save();
+    }
+
+    // Save recommendation
+    const recommendation = await Recommendation.create({
+        userId, personName, businessName, contact: businessContact,
+        serviceType, location, website, reasonsOfRecommendation
+    });
+    if(!recommendation) throw new ApiError(500, "Failed to create recommendation with user info");
+
+    // Response
+    return response.status(201).json(new ApiResponse(201, null, "Recommendation has been created with user info"));
+});
+
+module.exports = { createRecommendation, createRecommendationWithUserInfo };
