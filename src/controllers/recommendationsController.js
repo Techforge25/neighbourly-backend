@@ -28,8 +28,8 @@ const createRecommendation = asyncHandler(async (request, response) => {
     {
         // Create business (First recommendation for business)
         business = await Business.create({ 
-            personName, businessName, contact, serviceType, location,
-            website, reasonsOfRecommendation
+            personName, businessName, contact, serviceType, 
+            location, website
         });
         if(!business) throw new ApiError(500, "Failed to create business");
     }
@@ -45,7 +45,7 @@ const createRecommendation = asyncHandler(async (request, response) => {
     }
 
     // Save to db
-    const recommendation = await Recommendation.create({ userId, businessId: business._id });
+    const recommendation = await Recommendation.create({ userId, businessId: business._id, reasonsOfRecommendation });
     if(!recommendation) throw new ApiError(500, "Failed to create recommendation");
 
     // Response
@@ -86,7 +86,7 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
         // Create business (First recommendation for business)
         business = await Business.create({ 
             personName, businessName, contact: businessContact,
-            serviceType, location, website, reasonsOfRecommendation
+            serviceType, location, website
         });
         if(!business) throw new ApiError(500, "Failed to create business");
     }
@@ -102,7 +102,7 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
     }    
 
     // Save recommendation
-    const recommendation = await Recommendation.create({ userId, businessId: business._id });
+    const recommendation = await Recommendation.create({ userId, businessId: business._id, reasonsOfRecommendation });
     if(!recommendation) throw new ApiError(500, "Failed to create recommendation with user info");
 
     // Response
@@ -154,7 +154,7 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
                 serviceType: "$business.serviceType",
                 location: "$business.location",
                 website: "$business.website",
-                reasonsOfRecommendation: "$business.reasonsOfRecommendation",
+                reasonsOfRecommendation: 1,
                 recommendationCount: "$business.recommendationCount"
             }
         }
