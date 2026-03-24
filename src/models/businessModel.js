@@ -12,7 +12,6 @@ const businessSchema = new Schema({
 
     // Other info
     website: { type:String, trim:true },
-    reasonsOfRecommendation:{ type:[String] },
 
     // Recommendation count
     recommendationCount: { type:Number, default:1 }
