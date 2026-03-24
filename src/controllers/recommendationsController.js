@@ -1,3 +1,4 @@
+const Business = require("../models/businessModel");
 const Recommendation = require("../models/recommendationsModel");
 const User = require("../models/userModel");
 const ApiError = require("../utils/ApiError");
@@ -19,6 +20,17 @@ const createRecommendation = asyncHandler(async (request, response) => {
     // Get validated payload
     const { personName, businessName, contact, serviceType, location, 
     website, reasonsOfRecommendation } = validatePayload(createRecommendationValidator, request.body);
+
+    // Find business
+    let business = await Business.findOne({ businessName });
+    if(!business)
+    {
+        business = await Business.create({ 
+            personName, businessName, contact, serviceType, location,
+            website, reasonsOfRecommendation
+        });
+        if(!business) throw new ApiError(500, "Failed to create business");
+    }
 
     // Save to db
     const recommendation = await Recommendation.create({
