@@ -6,7 +6,7 @@ const businessSchema = new Schema({
     // Basic info
     personName: { type:String, trim:true, required:true },
     businessName: { type:String, trim:true, required:true, unique:[true, "This business name is already taken"] },
-    contact: { type:String, trim:true, required:true },
+    contact: { type:String, trim:true, required:true, unique:[true, "This contact number has already been taken"] },
     serviceType: { type:String, trim:true, required:true },
     location: { type:String, trim:true, required:true },
 

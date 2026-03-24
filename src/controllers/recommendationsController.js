@@ -34,11 +34,14 @@ const createRecommendation = asyncHandler(async (request, response) => {
     }
     else
     {
+        // Prevent multi-recommendations for each business by same user
+        const recommendation = await Recommendation.findOne({ userId, businessId: business._id }).lean();
+        if(recommendation) throw new ApiError(400, "You have already given a recommendation to this business");
+
         // Increment recommendation count
         business.recommendationCount += 1;
         await business.save();        
     }
-
 
     // Save to db
     const recommendation = await Recommendation.create({ userId, businessId: business._id });
@@ -88,6 +91,10 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
     }
     else
     {
+        // Prevent multi-recommendations for each business by same user
+        const recommendation = await Recommendation.findOne({ userId, businessId: business._id }).lean();
+        if(recommendation) throw new ApiError(400, "You have already given a recommendation to this business");    
+
         // Increment recommendation count
         business.recommendationCount += 1;
         await business.save();        
