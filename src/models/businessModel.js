@@ -15,7 +15,7 @@ const businessSchema = new Schema({
     reasonsOfRecommendation:{ type:[String] },
 
     // Recommendation count
-    recommendationCount: { type:Number, default:0 }
+    recommendationCount: { type:Number, default:1 }
 });
 
 // Pagination plugin
