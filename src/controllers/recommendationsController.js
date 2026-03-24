@@ -25,18 +25,23 @@ const createRecommendation = asyncHandler(async (request, response) => {
     let business = await Business.findOne({ businessName });
     if(!business)
     {
+        // Create business (First recommendation for business)
         business = await Business.create({ 
             personName, businessName, contact, serviceType, location,
             website, reasonsOfRecommendation
         });
         if(!business) throw new ApiError(500, "Failed to create business");
     }
+    else
+    {
+        // Increment recommendation count
+        business.recommendationCount += 1;
+        await business.save();        
+    }
+
 
     // Save to db
-    const recommendation = await Recommendation.create({
-        userId, personName, businessName, contact,
-        serviceType, location, website, reasonsOfRecommendation
-    });
+    const recommendation = await Recommendation.create({ userId, businessId: business._id });
     if(!recommendation) throw new ApiError(500, "Failed to create recommendation");
 
     // Response
@@ -70,11 +75,26 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
         await user.save();
     }
 
+    // Find business
+    let business = await Business.findOne({ businessName });
+    if(!business)
+    {
+        // Create business (First recommendation for business)
+        business = await Business.create({ 
+            personName, businessName, contact: businessContact,
+            serviceType, location, website, reasonsOfRecommendation
+        });
+        if(!business) throw new ApiError(500, "Failed to create business");
+    }
+    else
+    {
+        // Increment recommendation count
+        business.recommendationCount += 1;
+        await business.save();        
+    }    
+
     // Save recommendation
-    const recommendation = await Recommendation.create({
-        userId, personName, businessName, contact: businessContact,
-        serviceType, location, website, reasonsOfRecommendation
-    });
+    const recommendation = await Recommendation.create({ userId, businessId: business._id });
     if(!recommendation) throw new ApiError(500, "Failed to create recommendation with user info");
 
     // Response
