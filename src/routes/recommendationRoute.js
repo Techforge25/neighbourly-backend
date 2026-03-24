@@ -1,13 +1,15 @@
 const { Router } = require("express");
-const { authentication } = require("../middlewares/auth");
-const { createRecommendation, createRecommendationWithUserInfo } = require("../controllers/recommendationsController");
+const { authentication, authCheck } = require("../middlewares/auth");
+const { createRecommendation, createRecommendationWithUserInfo, 
+fetchRecommendations } = require("../controllers/recommendationsController");
 
 // Router instance
 const recommendationRouter = Router();
 
-// Create recommendation
+// Create recommendation / // Fetch recommendations
 recommendationRouter.route("/")
-.post(authentication, createRecommendation);
+.post(authentication, createRecommendation)
+.get(authCheck, fetchRecommendations);
 
 // Create recommendation with user info
 recommendationRouter.route("/with-user-info")

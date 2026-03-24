@@ -1,3 +1,4 @@
+const { emptyList } = require("../constants");
 const Business = require("../models/businessModel");
 const Recommendation = require("../models/recommendationsModel");
 const User = require("../models/userModel");
@@ -108,4 +109,63 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
     return response.status(201).json(new ApiResponse(201, null, "Recommendation has been created with user info"));
 });
 
-module.exports = { createRecommendation, createRecommendationWithUserInfo };
+// Fetch recommendations
+const fetchRecommendations = asyncHandler(async (request, response) => {
+    let { page = 1, limit = 10, filter } = request.query;
+
+    // If not logged-in
+    if(!request.user)
+    {
+        page = 1;
+        limit = 3;
+    }
+    else
+    {
+        // If not given any recommendation yet
+        const userId = request.user._id;
+        const user = await User.findOne({ _id:userId, isProfileCompleted:true }).select("isProfileCompleted").lean();
+        if(!user)
+        {
+            page = 1;
+            limit = 3;            
+        }
+    }
+
+    // Base filter
+    const baseFilter = {};
+    if(filter) baseFilter["business.serviceType"] = { $regex:filter, $options:"i" };
+    
+    // Aggregate
+    const aggregation = Recommendation.aggregate([
+        // Lookup inside business
+        { $lookup:{ from: "businesses", localField: "businessId", foreignField: "_id", as: "business" } },
+
+        // Unwind
+        { $unwind: "$business" },
+
+        // Match
+        { $match:baseFilter },
+
+        // Projection
+        {
+            $project:{
+                personName: "$business.personName",
+                businessName: "$business.businessName",
+                serviceType: "$business.serviceType",
+                location: "$business.location",
+                website: "$business.website",
+                reasonsOfRecommendation: "$business.reasonsOfRecommendation",
+                recommendationCount: "$business.recommendationCount"
+            }
+        }
+    ]);
+
+    // Execute query
+    const recommendations = await Recommendation.aggregatePaginate(aggregation, { page, limit, sort:{ recommendationCount:-1 } });
+    if(!recommendations.docs.length) return response.status(200, emptyList, "No recommendations found");
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, recommendations, "Recommendations have been fetched"));
+});
+
+module.exports = { createRecommendation, createRecommendationWithUserInfo, fetchRecommendations };
