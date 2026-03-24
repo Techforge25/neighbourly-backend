@@ -5,7 +5,10 @@ const aggregatePaginate = require("mongoose-aggregate-paginate-v2");
 const recommendationSchema = new Schema({
     // References
     userId:{ type:Schema.Types.ObjectId, ref:"User" },
-    businessId:{ type:Schema.Types.ObjectId, ref:"Business" }
+    businessId:{ type:Schema.Types.ObjectId, ref:"Business" },
+
+    // Reason
+    reasonsOfRecommendation:{ type:[String] },
 }, { timestamps:true });
 
 // Pagination plugin
