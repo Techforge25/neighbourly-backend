@@ -23,6 +23,6 @@ businessSchema.index({ personName: 1 });
 businessSchema.index({ businessName: 1 });
 
 // Model
-const User = model("User", businessSchema);
+const Business = model("Business", businessSchema);
 
-module.exports = User;
+module.exports = Business;
