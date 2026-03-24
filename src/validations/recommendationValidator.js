@@ -1,10 +1,10 @@
 const joi = require("joi");
 
 // Patterns
-const alphaPattern = /^[a-zA-Z]*$/;
+const alphaPattern = /^[a-z A-Z]*$/;
 const alphaNumericPattern = /^[a-zA-Z0-9 -]*$/;
 const contactPattern = /^\+?[1-9]\d{9,14}$/;
-const addressPattern = /^[a-zA-Z0-9 -,]*$/;
+const addressPattern = /^[a-zA-Z0-9\s#.,-]*$/;
 
 // Create recommendation validator
 const createRecommendationValidator = joi.object({
