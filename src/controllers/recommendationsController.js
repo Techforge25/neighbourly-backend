@@ -14,7 +14,7 @@ const createRecommendation = asyncHandler(async (request, response) => {
     if(!user) throw new ApiError(404, "User not found!");
 
     // Check profile completion
-    if(!user.isProfileCompleted) throw new ApiError(400, "You cannot give recommendation without giving your profile info");
+    if(!user.isProfileCompleted) throw new ApiError(400, "You cannot give recommendation without setting up your profile");
 
     // Get validated payload
     const { personName, businessName, contact, serviceType, location, 
