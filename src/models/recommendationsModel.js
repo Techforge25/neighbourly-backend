@@ -1,21 +1,19 @@
 const { Schema, model } = require("mongoose");
+const aggregatePaginate = require("mongoose-aggregate-paginate-v2");
 
 // Schema
 const recommendationSchema = new Schema({
-    // User reference
+    // References
     userId:{ type:Schema.Types.ObjectId, ref:"User" },
-
-    // Basic info
-    personName: { type:String, trim:true, required:true },
-    businessName: { type:String, trim:true, required:true },
-    contact: { type:String, trim:true, required:true },
-    serviceType: { type:String, trim:true, required:true },
-    location: { type:String, trim:true, required:true },
-
-    // Other info
-    website: { type:String, trim:true },
-    reasonsOfRecommendation:{ type:[String] }
+    businessId:{ type:Schema.Types.ObjectId, ref:"Business" }
 }, { timestamps:true });
+
+// Pagination plugin
+recommendationSchema.plugin(aggregatePaginate);
+
+// Compund indexing
+recommendationSchema.index({ userId: 1 });
+recommendationSchema.index({ businessId: 1 });
 
 // Model
 const Recommendation = model("Recommendation", recommendationSchema);
