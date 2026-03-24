@@ -12,6 +12,7 @@ const userSchema = new Schema({
     // Role and verification
     role: { type:String, enum:["user"], default:"user" },
     isVerified: { type:Boolean, default:false },
+    isProfileCompleted: { type:Boolean, default:false },
 
     // Account verification otp
     accountVerificationToken: { type:String, default:null },

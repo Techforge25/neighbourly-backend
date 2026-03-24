@@ -19,7 +19,7 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
     if(!accountVerificationToken) throw new ApiError(500, "Failed to generate OTP");      
 
     // Get user if exist
-    let user = await User.findOne({ email }).select("fullName email isVerified sessionExpires");
+    let user = await User.findOne({ email }).select("fullName email isVerified sessionExpires isProfileCompleted");
     if(user)
     {
         // Update user with new OTP token
@@ -38,20 +38,18 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
             const accessToken = generateAccessToken({
                 _id: user._id,
                 role: user.role,
-                sessionExpires: sessionExpires          
+                sessionExpires: sessionExpires,
+                isProfileCompleted: user.isProfileCompleted          
             });
 
             // Save session
             user.sessionExpires = sessionExpires;         
             await user.save();
 
-            // User flag
-            const isNewUser = Boolean(!user.fullName);
-
             // Response
             return response.status(200)
             .cookie("accessToken", accessToken)
-            .json(new ApiResponse(200, { email, OTPRequired:false, isNewUser }, "Authenticated"));
+            .json(new ApiResponse(200, { email, OTPRequired:false, isProfileCompleted:user.isProfileCompleted }, "Authenticated"));
         }
     }
     else
@@ -73,7 +71,10 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
     if(!result) throw new ApiError(500, "Failed to send account activation token"); 
     
     // Response
-    return response.status(200).json(new ApiResponse(200, { email, OTPRequired:true }, "We have sent you an OTP to your email"));
+    return response.status(200).json(new ApiResponse(200, 
+        { email, OTPRequired:true, isProfileCompleted:user.isProfileCompleted }, 
+        "We have sent you an OTP to your email"
+    ));
 });
 
 // Verify OTP
@@ -95,7 +96,8 @@ const verifyOTP = asyncHandler(async (request, response) => {
     const accessToken = generateAccessToken({
         _id: user._id,
         role: user.role,
-        sessionExpires: sessionExpires          
+        sessionExpires: sessionExpires,
+        isProfileCompleted: user.isProfileCompleted       
     });
 
     // Save to db
@@ -105,13 +107,10 @@ const verifyOTP = asyncHandler(async (request, response) => {
     user.sessionExpires = sessionExpires;
     await user.save();
 
-    // User flag
-    const isNewUser = Boolean(!user.fullName);
-
     // Response
     return response.status(200)
     .cookie("accessToken", accessToken, cookieOptions)
-    .json(new ApiResponse(200, { email, isNewUser }, "Your account has been activated"));
+    .json(new ApiResponse(200, { email, isProfileCompleted: user.isProfileCompleted }, "Your account has been activated"));
 });
 
 // User auth check

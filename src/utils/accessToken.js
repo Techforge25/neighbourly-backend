@@ -11,6 +11,7 @@ const generateAccessToken = (user) => {
             _id: user._id,
             role: user.role,
             sessionExpires: user.sessionExpires,
+            isProfileCompleted: user.isProfileCompleted
         }, ACCESS_TOKEN_SECRET, { expiresIn:ACCESS_TOKEN_EXPIRY });
         if(!token) throw new ApiError(500, "Failed to generate access token");
 

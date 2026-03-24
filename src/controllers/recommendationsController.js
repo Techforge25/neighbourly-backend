@@ -45,12 +45,13 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
     } = validatePayload(createRecommendationWithUserInfoValidator, request.body);
 
     // Save user
-    if(!user.fullName && !user.contact)
+    if(!user.isProfileCompleted)
     {
         user.fullName = fullName;
         user.contact = userContact;
         user.streetName = userStreet;
         user.address = userAddress;
+        user.isProfileCompleted = true;
         await user.save();
     }
 
