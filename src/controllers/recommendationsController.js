@@ -10,8 +10,11 @@ const { createRecommendationValidator, createRecommendationWithUserInfoValidator
 const createRecommendation = asyncHandler(async (request, response) => {
     // Get user
     const userId = request.user._id;
-    const user = await User.findById(userId).select("_id").lean();
+    const user = await User.findById(userId).select("_id isProfileCompleted").lean();
     if(!user) throw new ApiError(404, "User not found!");
+
+    // Check profile completion
+    if(!user.isProfileCompleted) throw new ApiError(400, "You cannot give recommendation without giving your profile info");
 
     // Get validated payload
     const { personName, businessName, contact, serviceType, location, 
