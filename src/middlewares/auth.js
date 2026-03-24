@@ -39,4 +39,17 @@ const authorization = (roles = []) => {
     }
 };
 
-module.exports = { authentication, authorization };
+// Soft auth check
+const authCheck = asyncHandler((request, response, next) => {
+    const accessToken = getAccessToken(request);
+    if(accessToken)
+    {
+        // Verify
+        const user = verifyAccessToken(accessToken);
+        request.user = user || null;
+    }
+
+    return next();
+});
+
+module.exports = { authentication, authorization, authCheck };
