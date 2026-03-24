@@ -11,7 +11,7 @@ const recommendationSchema = new Schema({
 // Pagination plugin
 recommendationSchema.plugin(aggregatePaginate);
 
-// Compund indexing
+// Compound indexing
 recommendationSchema.index({ userId: 1 });
 recommendationSchema.index({ businessId: 1 });
 
