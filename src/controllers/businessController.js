@@ -13,7 +13,7 @@ const viewBusiness = asyncHandler(async (request, response) => {
         // Match
         { $match:{ _id: convertToMongoId(businessId) } },
 
-        // lookup inside user
+        // lookup inside recommendations
         {
             $lookup:{
                 from:"recommendations",
@@ -48,7 +48,8 @@ const viewBusiness = asyncHandler(async (request, response) => {
                 businessName: 1,
                 website: 1,
                 location: 1,
-                users: "$recommendation.users"
+                users: "$recommendation.users",
+                recommendation: "$recommendation"
             }
         }
     ]);

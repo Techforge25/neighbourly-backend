@@ -5,6 +5,7 @@ const User = require("../models/userModel");
 const ApiError = require("../utils/ApiError");
 const ApiResponse = require("../utils/ApiResponse");
 const asyncHandler = require("../utils/asyncHandler");
+const convertToMongoId = require("../utils/convertToMongoId");
 const validatePayload = require("../utils/validatePayload");
 const { createRecommendationValidator, createRecommendationWithUserInfoValidator } = require("../validations/recommendationValidator");
 
@@ -168,4 +169,56 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, recommendations, "Recommendations have been fetched"));
 });
 
-module.exports = { createRecommendation, createRecommendationWithUserInfo, fetchRecommendations };
+// View recommendation
+const viewRecommendation = asyncHandler(async (request, response) => {
+    const { recommendationId } = request.params;
+
+    // Fetch
+    const recommendation = await Recommendation.aggregate([
+        // Match
+        { $match:{ _id: convertToMongoId(recommendationId) } },
+
+        // Lookup inside business
+        { 
+            $lookup:{ 
+                from: "businesses", 
+                localField: "businessId", 
+                foreignField: "_id", 
+                as: "business",
+                pipeline:[
+                    { $project:{ personName:1, businessName:1, website:1, location:1 } }
+                ]
+            } 
+        },
+
+        // Lookup inside user
+        { 
+            $lookup: { 
+                from: "users", 
+                localField: "userId", 
+                foreignField: "_id", as: 
+                "users",
+                pipeline:[                    
+                    {
+                        $project: {
+                            fullName:1, email:1, streetName:1, address:1, recommendation:1
+                        }
+                    }
+                ]
+            } 
+        },
+
+        // Unwind
+        { $unwind: "$business" },        
+
+        // Final projection
+        {
+            $project:{ business:1, users:1 }
+        }  
+    ]);
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, recommendation[0], "Recommendation has been viewed"));
+});
+
+module.exports = { createRecommendation, createRecommendationWithUserInfo, fetchRecommendations, viewRecommendation };
