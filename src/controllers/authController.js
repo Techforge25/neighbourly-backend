@@ -47,7 +47,7 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
 
             // Response
             return response.status(200)
-            .cookie("accessToken", accessToken)
+            .cookie("accessToken", accessToken, cookieOptions)
             .json(new ApiResponse(200, { email, OTPRequired:false, isProfileCompleted:user.isProfileCompleted }, "Authenticated"));
         }
     }
