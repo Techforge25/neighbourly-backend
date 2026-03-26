@@ -3,7 +3,7 @@ const joi = require("joi");
 // Patterns
 const alphaPattern = /^[a-z A-Z]*$/;
 const alphaNumericPattern = /^[a-zA-Z0-9 -]*$/;
-const contactPattern = /^\+?[1-9]\d{9,14}$/;
+const contactPattern = /^(?:\+?[1-9]\d{9,14}|0\d{9,14})$/;
 const addressPattern = /^[a-zA-Z0-9\s#.,-]*$/;
 
 // Create recommendation validator
@@ -11,15 +11,18 @@ const createRecommendationValidator = joi.object({
     // Basic info
     personName: joi.string().trim().min(3).max(30).pattern(alphaPattern).required().label("Person name"),
     businessName: joi.string().trim().min(3).max(50).pattern(alphaPattern).required().label("Business name"),
+    email: joi.string().trim().lowercase().email().required().label("Business email"),
     contact: joi.string().trim().max(15).pattern(contactPattern).required().messages({
         "string.pattern.base": "Contact number must be a valid international format (e.g., +923001234567)."
     }).label("Contact"),
     serviceType: joi.string().trim().min(3).max(50).pattern(alphaPattern).required().label("Service type"),
     location: joi.string().trim().min(10).max(200).pattern(addressPattern).required().label("Location"),
 
-    // Other info
-    website: joi.string().trim().uri().optional().allow(null, "").label("Website"),
-    reasonsOfRecommendation: joi.array().items(joi.string().pattern(alphaNumericPattern)).min(1).max(3).required().label("Reasons of recommendation")
+    // Reason of recommendation
+    reasonsOfRecommendation: joi.array().items(joi.string().pattern(alphaNumericPattern)).min(1).max(3).required().label("Reasons of recommendation"),
+
+    // Comments
+    comment: joi.string().trim().optional().allow(null, "").label("Comment")
 });
 
 // Create recommendation with user info validator
@@ -35,13 +38,18 @@ const createRecommendationWithUserInfoValidator = joi.object({
     // Business info
     personName: joi.string().trim().min(3).max(30).pattern(alphaPattern).required().label("Person name"),
     businessName: joi.string().trim().min(3).max(50).pattern(alphaPattern).required().label("Business name"),
+    businessEmail: joi.string().trim().lowercase().email().optional().allow(null, "").label("Business email"),
     businessContact: joi.string().trim().max(15).pattern(contactPattern).required().messages({
         "string.pattern.base": "Contact number must be a valid international format (e.g., +923001234567)."
     }).label("Business contact"),
     serviceType: joi.string().trim().min(3).max(50).pattern(alphaPattern).required().label("Service type"),
     location: joi.string().trim().min(10).max(200).pattern(addressPattern).required().label("Location"),
-    website: joi.string().trim().uri().optional().allow(null, "").label("Website"),
-    reasonsOfRecommendation: joi.array().items(joi.string().pattern(alphaNumericPattern)).min(1).max(3).required().label("Reasons of recommendation")
+
+    // Reason of recommendations
+    reasonsOfRecommendation: joi.array().items(joi.string().pattern(alphaNumericPattern)).min(1).max(3).required().label("Reasons of recommendation"),
+
+    // Comments
+    comment: joi.string().trim().optional().allow(null, "").label("Comment")    
 });
 
 module.exports = { createRecommendationValidator, createRecommendationWithUserInfoValidator };
