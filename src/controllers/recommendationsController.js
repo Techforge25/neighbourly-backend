@@ -20,15 +20,15 @@ const createRecommendation = asyncHandler(async (request, response) => {
     if(!user.isProfileCompleted) throw new ApiError(400, "You cannot give recommendation without setting up your profile");
 
     // Get validated payload
-    const { personName, businessName, email, contact, serviceType, location, 
-    reasonsOfRecommendation } = validatePayload(createRecommendationValidator, request.body);
+    const { personName, businessName, email, contact, serviceType, location, comment, 
+    reasonsOfRecommendation } = validatePayload(createRecommendationValidator, request.body) || {};
 
     // Find business
     let business = await Business.findOne({ businessName });
     if(!business)
     {
         // Create business (First recommendation for business)
-        business = await Business.create({ personName, businessName, email, contact, serviceType, location });
+        business = await Business.create({ personName, businessName, email, contact, serviceType, location, comment });
         if(!business) throw new ApiError(500, "Failed to create business");
     }
     else
@@ -64,7 +64,7 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
 
         // Business info
         personName, businessName, businessEmail, businessContact, serviceType, 
-        location, reasonsOfRecommendation } = validatePayload(createRecommendationWithUserInfoValidator, request.body);
+        location, comment, reasonsOfRecommendation } = validatePayload(createRecommendationWithUserInfoValidator, request.body);
 
     // Save user
     if(!user.isProfileCompleted)
@@ -82,7 +82,8 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
     if(!business)
     {
         // Create business (First recommendation for business)
-        business = await Business.create({ personName, businessName, email:businessEmail, contact:businessContact, serviceType, location });
+        business = await Business.create({ personName, businessName, email:businessEmail, 
+        contact:businessContact, serviceType, location, comment });
         if(!business) throw new ApiError(500, "Failed to create business");
     }
     else

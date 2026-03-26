@@ -46,7 +46,6 @@ const viewBusiness = asyncHandler(async (request, response) => {
             $project:{
                 personName: 1,
                 businessName: 1,
-                website: 1,
                 location: 1,
                 users: "$recommendation.users",
                 recommendation: "$recommendation"
