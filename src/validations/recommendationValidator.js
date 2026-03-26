@@ -22,7 +22,7 @@ const createRecommendationValidator = joi.object({
     reasonsOfRecommendation: joi.array().items(joi.string().pattern(alphaNumericPattern)).min(1).max(3).required().label("Reasons of recommendation"),
 
     // Comments
-    comment: joi.string().trim().optional().allow(null, "").label("Comment")
+    comment: joi.string().trim().optional().allow(null, "").default("-").label("Comment")
 });
 
 // Create recommendation with user info validator
@@ -49,7 +49,7 @@ const createRecommendationWithUserInfoValidator = joi.object({
     reasonsOfRecommendation: joi.array().items(joi.string().pattern(alphaNumericPattern)).min(1).max(3).required().label("Reasons of recommendation"),
 
     // Comments
-    comment: joi.string().trim().optional().allow(null, "").label("Comment")    
+    comment: joi.string().trim().optional().allow(null, "").default("-").label("Comment")    
 });
 
 module.exports = { createRecommendationValidator, createRecommendationWithUserInfoValidator };
