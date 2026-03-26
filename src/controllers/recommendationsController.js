@@ -208,7 +208,7 @@ const viewRecommendation = asyncHandler(async (request, response) => {
 
         // Final projection
         {
-            $project:{ business:1, users:1 }
+            $project:{ business:1, users:1, createdAt:1 }
         }  
     ]);
 
