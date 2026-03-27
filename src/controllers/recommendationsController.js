@@ -151,6 +151,7 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
         {
             $group: {
                 _id: "$business._id",
+                businessId: { $first: "$business._id" },
                 personName: { $first: "$business.personName" },
                 businessName: { $first: "$business.businessName" },
                 serviceType: { $first: "$business.serviceType" },
@@ -159,6 +160,9 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
                 reasonsOfRecommendation: { $push: "$reasonsOfRecommendation" }
             }
         },
+
+        // Project
+        { $project:{ _id:0 } },
 
         // Sort by recommendation count descending
         { $sort: { recommendationCount:-1 } }        
