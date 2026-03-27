@@ -111,7 +111,7 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
 
 // Fetch recommendations
 const fetchRecommendations = asyncHandler(async (request, response) => {
-    let { page = 1, limit = 10, filter, search } = request.query;
+    let { page = 1, limit = 10, filter, location } = request.query;
 
     // If not logged-in
     if(!request.user)
@@ -134,7 +134,7 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
     // Base filter
     const baseFilter = {};
     if(filter) baseFilter["business.serviceType"] = { $regex: filter, $options: "i" };
-    if(search) baseFilter['business.personName'] = { $regex: search, $options: "i" };
+    if(location) baseFilter['business.location'] = { $regex: location, $options: "i" };
     
     // Aggregate
     const aggregation = Recommendation.aggregate([
@@ -145,7 +145,7 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
         { $unwind: "$business" },
 
         // Match filter and minimum recommendation count
-        { $match:{ ...baseFilter, "business.recommendationCount":{ $gte:3 } } },   
+        { $match:{ ...baseFilter, "business.recommendationCount":{ $gte:3 } } },  
 
         // Group by business to remove duplicates
         {
