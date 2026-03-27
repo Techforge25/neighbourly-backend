@@ -5,7 +5,7 @@ const userSchema = new Schema({
     // Basic info
     fullName: { type:String, trim:true },
     email: { type:String, trim:true, lowercase:true, required:true, unique:[true, "This email has already been taken"] },
-    contact: { type:String, trim:true, unique:[true, "This contact number is already taken"] },
+    contact: { type:String, trim:true },
     streetName: { type:String, trim:true },
     address: { type:String, trim:true },
 
