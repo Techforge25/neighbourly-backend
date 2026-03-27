@@ -168,56 +168,67 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, recommendations, "Recommendations have been fetched"));
 });
 
-// View recommendation
-const viewRecommendation = asyncHandler(async (request, response) => {
-    const { recommendationId } = request.params;
+// View business recommendation
+const viewBusinessRecommendations = asyncHandler(async (request, response) => {
+    const { businessId } = request.params;
 
     // Fetch
-    const recommendation = await Recommendation.aggregate([
+    const result = await Business.aggregate([
         // Match
-        { $match:{ _id: convertToMongoId(recommendationId) } },
+        { $match: { _id: convertToMongoId(businessId) } },
 
-        // Lookup inside business
-        { 
-            $lookup:{ 
-                from: "businesses", 
-                localField: "businessId", 
-                foreignField: "_id", 
-                as: "business",
-                pipeline:[
-                    { $project:{ personName:1, businessName:1, location:1, contact:1 } }
-                ]
-            } 
-        },
-
-        // Lookup inside user
-        { 
-            $lookup: { 
-                from: "users", 
-                localField: "userId", 
-                foreignField: "_id", 
-                as: "users",
-                pipeline:[                    
-                    {
-                        $project: {
-                            fullName:1, email:1, streetName:1, address:1, recommendation:1
-                        }
-                    }
-                ]
-            } 
-        },
-
-        // Unwind
-        { $unwind: "$business" },        
-
-        // Final projection
+        // Lookup recommendations
         {
-            $project:{ business:1, users:1, createdAt:1 }
-        }  
+            $lookup: {
+                from: "recommendations",
+                localField: "_id",
+                foreignField: "businessId",
+                as: "recommendations"
+            }
+        },
+
+        // Unwind recommendations
+        { $unwind: { path: "$recommendations", preserveNullAndEmptyArrays:true } },
+
+        // Lookup users for each recommendation
+        {
+            $lookup: {
+                from: "users",
+                localField: "recommendations.userId",
+                foreignField: "_id",
+                as: "user",
+                pipeline: [
+                    { $project: { fullName: 1, email: 1, streetName: 1, address: 1 } }
+                ]
+            }
+        },
+
+        // Unwind user
+        { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+
+        // Group back all recommendations
+        {
+            $group: {
+                _id: "$_id",
+                personName: { $first: "$personName" },
+                businessName: { $first: "$businessName" },
+                contact: { $first: "$contact" },
+                location: { $first: "$location" },
+
+                recommendations: {
+                    $push: {
+                        user: "$user",
+                        reasonsOfRecommendation: "$recommendations.reasonsOfRecommendation",
+                        comment: "$recommendations.comment",
+                        createdAt: "$recommendations.createdAt"
+                    }
+                }
+            }
+        }
     ]);
 
     // Response
-    return response.status(200).json(new ApiResponse(200, recommendation[0], "Recommendation has been viewed"));
+    return response.status(200).json(new ApiResponse(200, result[0], "Business recommendations fetched"));
 });
 
-module.exports = { createRecommendation, createRecommendationWithUserInfo, fetchRecommendations, viewRecommendation };
+module.exports = { createRecommendation, createRecommendationWithUserInfo, fetchRecommendations, viewBusinessRecommendations };
