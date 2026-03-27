@@ -71,7 +71,7 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
     {
         // Prevent contact duplication for user
         const isExist = await User.findOne({ contact:userContact });
-        if(isExist) throw new ApiError(400, "This contact number is already been taken!");
+        if(isExist) throw new ApiError(400, `This '${userContact}' contact number is already been taken by another user!`);
 
         // Save user info
         user.fullName = fullName;
