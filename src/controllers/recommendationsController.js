@@ -24,7 +24,7 @@ const createRecommendation = asyncHandler(async (request, response) => {
     reasonsOfRecommendation } = validatePayload(createRecommendationValidator, request.body) || {};
 
     // Find business
-    let business = await Business.findOne({ contact });
+    let business = await Business.findOne({ $or:[{ businessName }, { contact }] });
     if(!business)
     {
         // Create business (First recommendation for business)
