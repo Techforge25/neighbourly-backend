@@ -111,7 +111,7 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
 
 // Fetch recommendations
 const fetchRecommendations = asyncHandler(async (request, response) => {
-    let { page = 1, limit = 10, filter } = request.query;
+    let { page = 1, limit = 10, filter, search } = request.query;
 
     // If not logged-in
     if(!request.user)
@@ -133,36 +133,40 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
 
     // Base filter
     const baseFilter = {};
-    if(filter) baseFilter["business.serviceType"] = { $regex:filter, $options:"i" };
+    if(filter) baseFilter["business.serviceType"] = { $regex: filter, $options: "i" };
+    if(search) baseFilter['business.personName'] = { $regex: search, $options: "i" };
     
     // Aggregate
     const aggregation = Recommendation.aggregate([
         // Lookup inside business
         { $lookup:{ from: "businesses", localField: "businessId", foreignField: "_id", as: "business" } },
 
-        // Unwind
+        // Unwind business array
         { $unwind: "$business" },
 
-        // Match
-        { $match:baseFilter },
+        // Match filter and minimum recommendation count
+        { $match:{ ...baseFilter, "business.recommendationCount":{ $gte:3 } } },   
 
-        // Projection
+        // Group by business to remove duplicates
         {
-            $project:{
-                personName: "$business.personName",
-                businessName: "$business.businessName",
-                serviceType: "$business.serviceType",
-                location: "$business.location",
-
-                reasonsOfRecommendation: 1,
-                recommendationCount: "$business.recommendationCount"
+            $group: {
+                _id: "$business._id",
+                personName: { $first: "$business.personName" },
+                businessName: { $first: "$business.businessName" },
+                serviceType: { $first: "$business.serviceType" },
+                location: { $first: "$business.location" },
+                recommendationCount: { $first: "$business.recommendationCount" },
+                reasonsOfRecommendation: { $push: "$reasonsOfRecommendation" }
             }
-        }
+        },
+
+        // Sort by recommendation count descending
+        { $sort: { recommendationCount:-1 } }        
     ]);
 
-    // Execute query
+    // Execute query with pagination
     const recommendations = await Recommendation.aggregatePaginate(aggregation, { page, limit, sort:{ recommendationCount:-1 } });
-    if(!recommendations.docs.length) return response.status(200, emptyList, "No recommendations found");
+    if(!recommendations.docs.length) return response.status(200).json(new ApiResponse(200, [], "No recommendations found"));
 
     // Response
     return response.status(200).json(new ApiResponse(200, recommendations, "Recommendations have been fetched"));
