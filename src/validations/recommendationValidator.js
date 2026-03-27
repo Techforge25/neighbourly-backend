@@ -18,7 +18,7 @@ const createRecommendationValidator = joi.object({
     location: joi.string().trim().min(3).max(200).pattern(addressPattern).required().label("Location"),
 
     // Reason of recommendation
-    reasonsOfRecommendation: joi.array().items(joi.string().pattern(alphaNumericPattern)).min(1).max(3).required().label("Reasons of recommendation"),
+    reasonsOfRecommendation: joi.array().items(joi.string().pattern(/^[a-zA-Z0-9 -/]*$/)).min(1).max(3).required().label("Reasons of recommendation"),
 
     // Comments
     comment: joi.string().trim().optional().allow(null, "").default("-").label("Comment")
@@ -44,7 +44,7 @@ const createRecommendationWithUserInfoValidator = joi.object({
     location: joi.string().trim().min(3).max(200).pattern(addressPattern).required().label("Location"),
 
     // Reason of recommendations
-    reasonsOfRecommendation: joi.array().items(joi.string().pattern(alphaNumericPattern)).min(1).max(3).required().label("Reasons of recommendation"),
+    reasonsOfRecommendation: joi.array().items(joi.string().pattern(/^[a-zA-Z0-9 -/]*$/)).min(1).max(3).required().label("Reasons of recommendation"),
 
     // Comments
     comment: joi.string().trim().optional().allow(null, "").default("-").label("Comment")    
