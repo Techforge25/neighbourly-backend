@@ -20,15 +20,15 @@ const createRecommendation = asyncHandler(async (request, response) => {
     if(!user.isProfileCompleted) throw new ApiError(400, "You cannot give recommendation without setting up your profile");
 
     // Get validated payload
-    const { personName, businessName, email, contact, serviceType, location, comment, 
+    const { personName, businessName, contact, serviceType, location, comment, 
     reasonsOfRecommendation } = validatePayload(createRecommendationValidator, request.body) || {};
 
     // Find business
-    let business = await Business.findOne({ $or:[{ businessName }, { email }, { contact }] });
+    let business = await Business.findOne({ contact });
     if(!business)
     {
         // Create business (First recommendation for business)
-        business = await Business.create({ personName, businessName, email, contact, serviceType, location, comment });
+        business = await Business.create({ personName, businessName, contact, serviceType, location, comment });
         if(!business) throw new ApiError(500, "Failed to create business");
     }
     else
@@ -63,7 +63,7 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
         fullName, userContact, userStreet, userAddress,
 
         // Business info
-        personName, businessName, businessEmail, businessContact, serviceType, 
+        personName, businessName, businessContact, serviceType, 
         location, comment, reasonsOfRecommendation } = validatePayload(createRecommendationWithUserInfoValidator, request.body);
 
     // Save user
@@ -83,12 +83,11 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
     }
 
     // Find business
-    let business = await Business.findOne({ $or:[{ businessName }, { email:businessEmail }, { contact:businessContact }] });
+    let business = await Business.findOne({ $or:[{ businessName }, { contact:businessContact }] });
     if(!business)
     {
         // Create business (First recommendation for business)
-        business = await Business.create({ personName, businessName, email:businessEmail, 
-        contact:businessContact, serviceType, location, comment });
+        business = await Business.create({ personName, businessName, contact:businessContact, serviceType, location, comment });
         if(!business) throw new ApiError(500, "Failed to create business");
     }
     else
@@ -186,7 +185,7 @@ const viewRecommendation = asyncHandler(async (request, response) => {
                 foreignField: "_id", 
                 as: "business",
                 pipeline:[
-                    { $project:{ personName:1, businessName:1, location:1, email:1, contact:1 } }
+                    { $project:{ personName:1, businessName:1, location:1, contact:1 } }
                 ]
             } 
         },

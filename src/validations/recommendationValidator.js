@@ -11,7 +11,6 @@ const createRecommendationValidator = joi.object({
     // Basic info
     personName: joi.string().trim().min(3).max(30).pattern(alphaPattern).required().label("Person name"),
     businessName: joi.string().trim().min(3).max(50).pattern(alphaPattern).required().label("Business name"),
-    email: joi.string().trim().lowercase().email().required().label("Business email"),
     contact: joi.string().trim().max(15).pattern(contactPattern).required().messages({
         "string.pattern.base": "Contact number must be a valid international format (e.g., +923001234567)."
     }).label("Contact"),
@@ -38,7 +37,6 @@ const createRecommendationWithUserInfoValidator = joi.object({
     // Business info
     personName: joi.string().trim().min(3).max(30).pattern(alphaPattern).required().label("Person name"),
     businessName: joi.string().trim().min(3).max(50).pattern(alphaPattern).required().label("Business name"),
-    businessEmail: joi.string().trim().lowercase().email().optional().allow(null, "").label("Business email"),
     businessContact: joi.string().trim().max(15).pattern(contactPattern).required().messages({
         "string.pattern.base": "Contact number must be a valid international format (e.g., +923001234567)."
     }).label("Business contact"),
