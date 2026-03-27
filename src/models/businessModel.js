@@ -11,10 +11,7 @@ const businessSchema = new Schema({
     location: { type:String, trim:true, required:true },
 
     // Recommendation count
-    recommendationCount: { type:Number, default:1 },
-
-    // Optional comments
-    comment: { type:String, trim:true }
+    recommendationCount: { type:Number, default:1 }
 });
 
 // Pagination plugin

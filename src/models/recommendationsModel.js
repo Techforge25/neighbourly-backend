@@ -9,6 +9,9 @@ const recommendationSchema = new Schema({
 
     // Reason
     reasonsOfRecommendation:{ type:[String] },
+
+    // Optional comments
+    comment: { type:String, trim:true }
 }, { timestamps:true });
 
 // Pagination plugin

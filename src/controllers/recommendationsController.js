@@ -28,7 +28,7 @@ const createRecommendation = asyncHandler(async (request, response) => {
     if(!business)
     {
         // Create business (First recommendation for business)
-        business = await Business.create({ personName, businessName, contact, serviceType, location, comment });
+        business = await Business.create({ personName, businessName, contact, serviceType, location });
         if(!business) throw new ApiError(500, "Failed to create business");
     }
     else
@@ -43,7 +43,7 @@ const createRecommendation = asyncHandler(async (request, response) => {
     }
 
     // Save to db
-    const recommendation = await Recommendation.create({ userId, businessId: business._id, reasonsOfRecommendation });
+    const recommendation = await Recommendation.create({ userId, businessId: business._id, reasonsOfRecommendation, comment });
     if(!recommendation) throw new ApiError(500, "Failed to create recommendation");
 
     // Response
@@ -87,7 +87,7 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
     if(!business)
     {
         // Create business (First recommendation for business)
-        business = await Business.create({ personName, businessName, contact:businessContact, serviceType, location, comment });
+        business = await Business.create({ personName, businessName, contact:businessContact, serviceType, location });
         if(!business) throw new ApiError(500, "Failed to create business");
     }
     else
@@ -102,7 +102,7 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
     }    
 
     // Save recommendation
-    const recommendation = await Recommendation.create({ userId, businessId: business._id, reasonsOfRecommendation });
+    const recommendation = await Recommendation.create({ userId, businessId: business._id, reasonsOfRecommendation, comment });
     if(!recommendation) throw new ApiError(500, "Failed to create recommendation with user info");
 
     // Response
@@ -195,8 +195,8 @@ const viewRecommendation = asyncHandler(async (request, response) => {
             $lookup: { 
                 from: "users", 
                 localField: "userId", 
-                foreignField: "_id", as: 
-                "users",
+                foreignField: "_id", 
+                as: "users",
                 pipeline:[                    
                     {
                         $project: {
