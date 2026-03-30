@@ -31,7 +31,6 @@ const createRecommendationWithUserInfoValidator = joi.object({
     userContact: joi.string().trim().max(15).pattern(contactPattern).required().messages({
         "string.pattern.base": "Contact number must be a valid international format (e.g., +923001234567)."
     }).label("User contact"),
-    userStreet: joi.string().trim().min(3).max(50).pattern(addressPattern).required().label("User street road"),
     userAddress: joi.string().trim().min(3).max(200).pattern(addressPattern).required().label("User address"),
 
     // Business info

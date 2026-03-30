@@ -60,7 +60,7 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
     // Get validated payload
     const { 
         // User info
-        fullName, userContact, userStreet, userAddress,
+        fullName, userContact, userAddress,
 
         // Business info
         personName, businessName, businessContact, serviceType, 
@@ -76,7 +76,6 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
         // Save user info
         user.fullName = fullName;
         user.contact = userContact;
-        user.streetName = userStreet;
         user.address = userAddress;
         user.isProfileCompleted = true;
         await user.save();
@@ -206,7 +205,7 @@ const viewBusinessRecommendations = asyncHandler(async (request, response) => {
                 foreignField: "_id",
                 as: "user",
                 pipeline: [
-                    { $project: { fullName: 1, email: 1, streetName: 1, address: 1 } }
+                    { $project: { fullName: 1, email: 1, address: 1 } }
                 ]
             }
         },
