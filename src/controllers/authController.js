@@ -6,7 +6,7 @@ const validatePayload = require("../utils/validatePayload");
 const { userRegistrationCheckValidator, verifyOTPValidator } = require("../validations/userValidator");
 const { generateAccessToken } = require("../utils/accessToken");
 const { cookieOptions } = require("../constants");
-const generateCode = require("../../utils/generateCode");
+const generateCode = require("../utils/generateCode");
 const sendEmail = require("../service/email");
 
 // User registration check
