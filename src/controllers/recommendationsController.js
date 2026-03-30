@@ -112,11 +112,15 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
 const fetchRecommendations = asyncHandler(async (request, response) => {
     let { page = 1, limit = 10, filter, location } = request.query;
 
+    // Show list flag
+    let showFullList = true;
+
     // If not logged-in
     if(!request.user)
     {
         page = 1;
         limit = 3;
+        showFullList = false;
     }
     else
     {
@@ -126,7 +130,8 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
         if(!user)
         {
             page = 1;
-            limit = 3;            
+            limit = 3;
+            showFullList = false;        
         }
     }
 
@@ -171,7 +176,7 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
     if(!recommendations.docs.length) return response.status(200).json(new ApiResponse(200, emptyList, "No recommendations found"));
 
     // Response
-    return response.status(200).json(new ApiResponse(200, recommendations, "Recommendations have been fetched"));
+    return response.status(200).json(new ApiResponse(200, { recommendations, showFullList }, "Recommendations have been fetched"));
 });
 
 // View business recommendation
