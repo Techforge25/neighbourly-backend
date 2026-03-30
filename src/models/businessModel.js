@@ -8,7 +8,6 @@ const businessSchema = new Schema({
     businessName: { type:String, trim:true, required:true, unique:[true, "This business name is already taken"] },
     contact: { type:String, trim:true, required:true, unique:[true, "This business contact number has already been taken"] },
     serviceType: { type:String, trim:true, required:true },
-    location: { type:String, trim:true, required:true },
 
     // Recommendation count
     recommendationCount: { type:Number, default:1 }

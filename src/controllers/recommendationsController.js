@@ -20,7 +20,7 @@ const createRecommendation = asyncHandler(async (request, response) => {
     if(!user.isProfileCompleted) throw new ApiError(400, "You cannot give recommendation without setting up your profile");
 
     // Get validated payload
-    const { personName, businessName, contact, serviceType, location, comment, 
+    const { personName, businessName, contact, serviceType, comment, 
     reasonsOfRecommendation } = validatePayload(createRecommendationValidator, request.body) || {};
 
     // Find business
@@ -28,7 +28,7 @@ const createRecommendation = asyncHandler(async (request, response) => {
     if(!business)
     {
         // Create business (First recommendation for business)
-        business = await Business.create({ personName, businessName, contact, serviceType, location });
+        business = await Business.create({ personName, businessName, contact, serviceType });
         if(!business) throw new ApiError(500, "Failed to create business");
     }
     else
@@ -64,7 +64,7 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
 
         // Business info
         personName, businessName, businessContact, serviceType, 
-        location, comment, reasonsOfRecommendation } = validatePayload(createRecommendationWithUserInfoValidator, request.body);
+        comment, reasonsOfRecommendation } = validatePayload(createRecommendationWithUserInfoValidator, request.body);
 
     // Save user
     if(!user.isProfileCompleted)
@@ -86,7 +86,7 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
     if(!business)
     {
         // Create business (First recommendation for business)
-        business = await Business.create({ personName, businessName, contact:businessContact, serviceType, location });
+        business = await Business.create({ personName, businessName, contact:businessContact, serviceType });
         if(!business) throw new ApiError(500, "Failed to create business");
     }
     else
@@ -154,7 +154,6 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
                 personName: { $first: "$business.personName" },
                 businessName: { $first: "$business.businessName" },
                 serviceType: { $first: "$business.serviceType" },
-                location: { $first: "$business.location" },
                 recommendationCount: { $first: "$business.recommendationCount" },
                 reasonsOfRecommendation: { $push: "$reasonsOfRecommendation" }
             }
@@ -220,7 +219,6 @@ const viewBusinessRecommendations = asyncHandler(async (request, response) => {
                 personName: { $first: "$personName" },
                 businessName: { $first: "$businessName" },
                 contact: { $first: "$contact" },
-                location: { $first: "$location" },
 
                 recommendations: {
                     $push: {
