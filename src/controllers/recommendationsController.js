@@ -162,6 +162,7 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
                 businessId: { $first: "$business._id" },
                 personName: { $first: "$business.personName" },
                 businessName: { $first: "$business.businessName" },
+                address: { $first: "$user.address" },
                 serviceType: { $first: "$business.serviceType" },
                 recommendationCount: { $first: "$business.recommendationCount" },
                 reasonsOfRecommendation: { $push: "$reasonsOfRecommendation" }
