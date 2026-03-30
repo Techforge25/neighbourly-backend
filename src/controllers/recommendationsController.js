@@ -177,7 +177,7 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
 
     // Execute query with pagination
     const recommendations = await Recommendation.aggregatePaginate(aggregation, { page, limit });
-    if(!recommendations.docs.length) return response.status(200).json(new ApiResponse(200, emptyList, "No recommendations found"));
+    if(!recommendations.docs.length) return response.status(200).json(new ApiResponse(200, { emptyList, showFullList }, "No recommendations found"));
 
     // Response
     return response.status(200).json(new ApiResponse(200, { recommendations, showFullList }, "Recommendations have been fetched"));
