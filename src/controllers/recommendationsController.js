@@ -138,18 +138,22 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
     // Base filter
     const baseFilter = {};
     if(filter) baseFilter["business.serviceType"] = { $regex: filter, $options: "i" };
-    if(location) baseFilter['business.location'] = { $regex: location, $options: "i" };
+    if(location) baseFilter['user.address'] = { $regex: location, $options: "i" }; 
     
-    // Aggregate
-    const aggregation = Recommendation.aggregate([
+    // Aggregation
+    const aggregation = Recommendation.aggregate([     
         // Lookup inside business
         { $lookup:{ from: "businesses", localField: "businessId", foreignField: "_id", as: "business" } },
 
-        // Unwind business array
-        { $unwind: "$business" },
+        // Lookup inside user
+        { $lookup:{ from: "users", localField: "userId", foreignField: "_id", as: "user" } },
 
+        // Unwind
+        { $unwind: { path: "$business", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+        
         // Match filter and minimum recommendation count
-        { $match:{ ...baseFilter, "business.recommendationCount":{ $gte:3 } } },  
+        { $match:{ ...baseFilter, "business.recommendationCount":{ $gte:3 } } },    
 
         // Group by business to remove duplicates
         {
@@ -169,10 +173,10 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
 
         // Sort by recommendation count descending
         { $sort: { recommendationCount:-1 } }        
-    ]);
+    ]);    
 
     // Execute query with pagination
-    const recommendations = await Recommendation.aggregatePaginate(aggregation, { page, limit, sort:{ recommendationCount:-1 } });
+    const recommendations = await Recommendation.aggregatePaginate(aggregation, { page, limit });
     if(!recommendations.docs.length) return response.status(200).json(new ApiResponse(200, emptyList, "No recommendations found"));
 
     // Response
