@@ -23,6 +23,17 @@ const createRecommendation = asyncHandler(async (request, response) => {
     const { personName, businessName, contact, serviceType, comment, 
     reasonsOfRecommendation } = validatePayload(createRecommendationValidator, request.body) || {};
 
+    // Count todays recommendations
+    const today = new Date();
+    const todaysRecommendations = await Recommendation.countDocuments({
+        userId,
+        createdAt: {
+            $gte: new Date(today.setHours(0,0,0,0)),
+            $lte: new Date(today.setHours(23,59,59,999))
+        }
+    });
+    if(Number(todaysRecommendations) >= 3) throw new ApiError(400, "You can submit only 3 recommendations per day");
+
     // Find business
     let business = await Business.findOne({ $or:[{ businessName }, { contact }] });
     if(!business)
