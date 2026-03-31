@@ -10,7 +10,7 @@ const addressPattern = /^[a-zA-Z0-9\s#.,-]*$/;
 const createRecommendationValidator = joi.object({
     // Basic info
     personName: joi.string().trim().min(3).max(30).pattern(alphaPattern).required().label("Person name"),
-    businessName: joi.string().trim().min(3).max(50).pattern(alphaNumericPattern).required().label("Business name"),
+    businessName: joi.string().trim().min(3).max(50).required().label("Business name"),
     contact: joi.string().trim().max(15).pattern(contactPattern).required().messages({
         "string.pattern.base": "Contact number must be a valid international format (e.g., +923001234567)."
     }).label("Contact"),
@@ -34,7 +34,7 @@ const createRecommendationWithUserInfoValidator = joi.object({
 
     // Business info
     personName: joi.string().trim().min(3).max(30).pattern(alphaPattern).required().label("Person name"),
-    businessName: joi.string().trim().min(3).max(50).pattern(alphaPattern).required().label("Business name"),
+    businessName: joi.string().trim().min(3).max(50).required().label("Business name"),
     businessContact: joi.string().trim().max(15).pattern(contactPattern).required().messages({
         "string.pattern.base": "Contact number must be a valid international format (e.g., +923001234567)."
     }).label("Business contact"),
