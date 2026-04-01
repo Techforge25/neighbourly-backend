@@ -240,6 +240,7 @@ const viewBusinessRecommendations = asyncHandler(async (request, response) => {
                 personName: { $first: "$personName" },
                 businessName: { $first: "$businessName" },
                 contact: { $first: "$contact" },
+                serviceType: { $first: "$serviceType" },
 
                 recommendations: {
                     $push: {
