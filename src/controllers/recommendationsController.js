@@ -173,6 +173,7 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
                 businessId: { $first: "$business._id" },
                 personName: { $first: "$business.personName" },
                 businessName: { $first: "$business.businessName" },
+                businessContact: { $first: "$business.contact" },
                 addresses: { $addToSet: "$user.address" },
                 serviceType: { $first: "$business.serviceType" },
                 recommendationCount: { $first: "$business.recommendationCount" },
