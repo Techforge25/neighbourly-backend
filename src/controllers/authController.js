@@ -14,8 +14,9 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
     // Get validated payload
     const { email } = validatePayload(userRegistrationCheckValidator, request.body) || {};
 
-    // Generate OTP token
+    // Generate OTP token & expiry
     const { code:accountVerificationToken } = generateCode(6);
+    const accountVerificationTokenExpires = Date.now() + 1 * 60 * 1000;
     if(!accountVerificationToken) throw new ApiError(500, "Failed to generate OTP");      
 
     // Get user if exist
@@ -26,7 +27,7 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
         if(!user.isVerified)
         {
             user.accountVerificationToken = accountVerificationToken;
-            user.accountVerificationTokenExpires = Date.now() + 1 * 60 * 1000;
+            user.accountVerificationTokenExpires = accountVerificationTokenExpires;
             await user.save();
         }
         else
@@ -57,7 +58,7 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
         user = await User.create({ 
             email,
             accountVerificationToken,
-            accountVerificationTokenExpires: Date.now() + 1 * 60 * 1000
+            accountVerificationTokenExpires
         });
         if(!user) throw new ApiError(500, "Failed to create user account");
     } 
