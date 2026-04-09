@@ -18,7 +18,7 @@ const cookieOptions = {
     signed: true,
     maxAge: 1000 * 60 * 60 * 24 * 90,
     sameSite: isProduction ? "none" : "lax",
-    // domain: isProduction ? ".techforgeinnovations.com" : undefined
+    domain: isProduction ? ".beneighbourly.com.au" : undefined
 };
 
 // Empty list
