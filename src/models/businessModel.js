@@ -18,7 +18,6 @@ businessSchema.plugin(aggregatePaginate);
 
 // Compund indexing
 businessSchema.index({ personName: 1 });
-businessSchema.index({ businessName: 1 });
 
 // Model
 const Business = model("Business", businessSchema);
