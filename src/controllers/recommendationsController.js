@@ -182,11 +182,11 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
             }
         },
 
-        // Project
-        { $project:{ _id:0 } },
-
         // Sort by recommendation count descending
-        { $sort: { recommendationCount: -1, createdAt: -1, businessId: 1 } }
+        { $sort: { recommendationCount: -1, createdAt: -1, businessId: 1 } },
+
+        // Project
+        { $project:{ _id:0, createdAt:0 } },        
     ]);    
 
     // Execute query with pagination
