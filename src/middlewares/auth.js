@@ -10,7 +10,7 @@ const authentication = asyncHandler(async (request, response, next) => {
 
     // Verify
     const user = verifyAccessToken(accessToken);
-    if(!user) throw new ApiError(401, "Your session has expired! Please verify your identity via OTP");
+    if(!user) throw new ApiError(401, "Unauthorized! Please verify your identity via OTP");
 
     // Pass through
     request.user = user;
