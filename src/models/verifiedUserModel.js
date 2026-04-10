@@ -3,7 +3,7 @@ const { Schema, model } = require("mongoose");
 // Schema
 const verifiedUserSchema = new Schema({
     userId: { type:Schema.Types.ObjectId, ref:"User", required:true, unique:true },
-    expiresAt: { type:Date, default: () => Date.now() + 2 * 60 * 1000 } // 2 minutes expiry
+    expiresAt: { type:Date, default: () => Date.now() + 24 * 60 * 1000 } // 24 hours expiry
 }, { timestamps:true });
 
 // Index for automatic document expiration
