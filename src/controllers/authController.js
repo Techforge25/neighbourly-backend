@@ -8,6 +8,7 @@ const { generateAccessToken } = require("../utils/accessToken");
 const { cookieOptions } = require("../constants");
 const generateCode = require("../utils/generateCode");
 const sendEmail = require("../service/email");
+const VerifiedUser = require("../models/verifiedUserModel");
 
 // User registration check
 const userRegistrationCheck = asyncHandler(async (request, response) => {
@@ -20,11 +21,14 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
     if(!accountVerificationToken) throw new ApiError(500, "Failed to generate OTP");      
 
     // Get user if exist
-    let user = await User.findOne({ email }).select("fullName email role isVerified sessionExpires isProfileCompleted");
+    let user = await User.findOne({ email }).select("fullName email role isVerified isProfileCompleted");
     if(user)
     {
+        // Check if user is already verified
+        const isVerified = await VerifiedUser.findOne({ userId:user._id });
+
         // Update user with new OTP token
-        if(!user.isVerified)
+        if(!isVerified)
         {
             user.accountVerificationToken = accountVerificationToken;
             user.accountVerificationTokenExpires = accountVerificationTokenExpires;
@@ -32,19 +36,8 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
         }
         else
         {
-            // Session expiry date
-            const sessionExpires = Date.now() + 24 * 60 * 60 * 1000;
-            
             // Generate access token
-            const accessToken = generateAccessToken({
-                _id: user._id,
-                role: user.role,
-                sessionExpires: sessionExpires        
-            });
-
-            // Save session
-            user.sessionExpires = sessionExpires;         
-            await user.save();
+            const accessToken = generateAccessToken({ _id: user._id, role: user.role });
 
             // Response
             return response.status(200)
@@ -89,21 +82,16 @@ const verifyOTP = asyncHandler(async (request, response) => {
     if(user.accountVerificationToken !== accountVerificationToken) throw new ApiError(400, "Invalid OTP");
     if(user.accountVerificationTokenExpires < Date.now()) throw new ApiError(400, "This OTP has been expired! Request new one");
 
-    // Session expiry date
-    const sessionExpires = Date.now() + 24 * 60 * 60 * 1000;
+    // Verify user
+    await VerifiedUser.create({ userId:user._id });
     
     // Generate access token
-    const accessToken = generateAccessToken({
-        _id: user._id,
-        role: user.role,
-        sessionExpires: sessionExpires     
-    });
+    const accessToken = generateAccessToken({ _id: user._id, role: user.role });
 
     // Save to db
     user.accountVerificationToken = null;
     user.accountVerificationTokenExpires = null;
     user.isVerified = true;    
-    user.sessionExpires = sessionExpires;
     await user.save();
 
     // Response
