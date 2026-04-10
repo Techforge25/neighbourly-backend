@@ -83,7 +83,17 @@ const verifyOTP = asyncHandler(async (request, response) => {
     if(user.accountVerificationTokenExpires < Date.now()) throw new ApiError(400, "This OTP has been expired! Request new one");
 
     // Verify user
-    await VerifiedUser.create({ userId:user._id });
+    const verifiedUser = await VerifiedUser.findOne({ userId:user._id });
+    if(verifiedUser)
+    {
+        verifiedUser.expiresAt = Date.now() + 2 * 60 * 1000; // Extend expiry by 2 minutes
+        await verifiedUser.save();
+    }
+    else
+    {
+        await VerifiedUser.create({ userId:user._id });
+    }
+    
     
     // Generate access token
     const accessToken = generateAccessToken({ _id: user._id, role: user.role });
