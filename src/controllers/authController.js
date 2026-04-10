@@ -28,7 +28,7 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
         const isVerified = await VerifiedUser.findOne({ userId:user._id });
 
         // Update user with new OTP token
-        if(!isVerified)
+        if(!isVerified || new Date(isVerified.expiresAt) < Date.now())
         {
             user.accountVerificationToken = accountVerificationToken;
             user.accountVerificationTokenExpires = accountVerificationTokenExpires;
