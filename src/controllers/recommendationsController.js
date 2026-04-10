@@ -77,19 +77,12 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
         personName, businessName, businessContact, serviceType, 
         comment, reasonsOfRecommendation } = validatePayload(createRecommendationWithUserInfoValidator, request.body);
 
-    // Save user
+    // Check profile completion
     if(!user.isProfileCompleted)
     {
         // Prevent contact duplication for user
         const isExist = await User.findOne({ contact:userContact });
         if(isExist) throw new ApiError(400, `This '${userContact}' contact number is already been taken by another user!`);
-
-        // Save user info
-        user.fullName = fullName;
-        user.contact = userContact;
-        user.address = userAddress;
-        user.isProfileCompleted = true;
-        await user.save();
     }
 
     // Find business
@@ -114,6 +107,13 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
     // Save recommendation
     const recommendation = await Recommendation.create({ userId, businessId: business._id, reasonsOfRecommendation, comment });
     if(!recommendation) throw new ApiError(500, "Failed to create recommendation with user info");
+
+    // Save user info
+    user.fullName = fullName;
+    user.contact = userContact;
+    user.address = userAddress;
+    user.isProfileCompleted = true;
+    await user.save();    
 
     // Response
     return response.status(201).json(new ApiResponse(201, null, "Recommendation has been created with user info"));
