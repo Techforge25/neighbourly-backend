@@ -177,7 +177,8 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
                 addresses: { $addToSet: "$user.address" },
                 serviceType: { $first: "$business.serviceType" },
                 recommendationCount: { $first: "$business.recommendationCount" },
-                reasonsOfRecommendation: { $push: "$reasonsOfRecommendation" }
+                reasonsOfRecommendation: { $push: "$reasonsOfRecommendation" },
+                createdAt: { $first: "$business.createdAt" }
             }
         },
 
@@ -185,7 +186,7 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
         { $project:{ _id:0 } },
 
         // Sort by recommendation count descending
-        { $sort: { recommendationCount:-1 } }        
+        { $sort: { recommendationCount: -1, createdAt: -1, businessId: 1 } }
     ]);    
 
     // Execute query with pagination
