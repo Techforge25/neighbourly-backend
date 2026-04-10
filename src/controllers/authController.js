@@ -86,7 +86,7 @@ const verifyOTP = asyncHandler(async (request, response) => {
     const verifiedUser = await VerifiedUser.findOne({ userId:user._id });
     if(verifiedUser)
     {
-        verifiedUser.expiresAt = Date.now() + 2 * 60 * 1000; // Extend expiry by 2 minutes
+        verifiedUser.expiresAt = Date.now() + 24 * 60 * 60 * 1000; // Extend expiry by 24 hours
         await verifiedUser.save();
     }
     else
