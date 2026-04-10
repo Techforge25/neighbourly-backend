@@ -15,10 +15,7 @@ const userSchema = new Schema({
 
     // Account verification otp
     accountVerificationToken: { type:String, default:null },
-    accountVerificationTokenExpires: { type:Date, default:null },
-
-    // Session expiry
-    sessionExpires: { type:Date }
+    accountVerificationTokenExpires: { type:Date, default:null }
 }, { timestamps:true });
 
 // Model
