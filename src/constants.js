@@ -5,7 +5,7 @@ const frontendUrl = isProduction ? process.env.FRONTEND_URL : "http://localhost:
 
 // Cors options
 const corsOptions = {
-    origin:[process.env.ORIGIN, "https://department-institutions-hero-implementing.trycloudflare.com", "https://www.suburbsays.com.au"],
+    origin:[process.env.ORIGIN, "http://localhost:3000", "https://department-institutions-hero-implementing.trycloudflare.com", "https://www.suburbsays.com.au"],
     credentials:true,
     methods:["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders:["Content-Type", "Authorization"]
