@@ -28,6 +28,12 @@ app.use("/api/v1/recommendation", recommendationRouter);
 app.use("/api/v1/getInTouch", getInTouchRouter);
 app.use("/api/v1/stats", statsRouter);
 
+// Import Admin Routes
+const adminAuthRouter = require("./routes/admin/adminAuthRoute");
+
+// Registered Routes
+app.use("/api/v1/admin/auth", adminAuthRouter);
+
 // API status route
 app.get("/", (request, response) => response.send(`Neighbourly backend-server is up and running at port ${port}`));
 
