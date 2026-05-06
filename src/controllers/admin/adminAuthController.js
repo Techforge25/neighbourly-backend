@@ -43,7 +43,6 @@ const adminLogin = asyncHandler(async (request, response) => {
 // Admin auth check
 const adminAuthCheck = asyncHandler(async (request, response) => {
     const { _id:adminId, role } = request.admin;
-    const { userProfileId = null, businessProfileId = null } = profiles || {};
 
     // Response
     return response.status(200).json(new ApiResponse(200, { adminId, role }, "Authenticated!"));
