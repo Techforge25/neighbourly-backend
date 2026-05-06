@@ -11,7 +11,10 @@ const recommendationSchema = new Schema({
     reasonsOfRecommendation:{ type:[String] },
 
     // Optional comments
-    comment: { type:String, trim:true }
+    comment: { type:String, trim:true },
+
+    // Status
+    status: { type: String, enum:["pending", "approved", "rejected"], default: "pending" }
 }, { timestamps:true });
 
 // Pagination plugin

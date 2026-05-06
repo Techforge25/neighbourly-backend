@@ -164,7 +164,9 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
         { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
         
         // Match filter and minimum recommendation count
-        { $match:{ ...baseFilter, "business.recommendationCount":{ $gte:3 } } },    
+        { 
+            $match:{ ...baseFilter, "business.recommendationCount":{ $gte:3 }, status: "approved" } 
+        },    
 
         // Group by business to remove duplicates
         {
