@@ -40,6 +40,15 @@ const adminLogin = asyncHandler(async (request, response) => {
     .json(new ApiResponse(200, { username: admin.username }, "Admin login successful"));
 });
 
+// Admin auth check
+const adminAuthCheck = asyncHandler(async (request, response) => {
+    const { _id:adminId, role } = request.admin;
+    const { userProfileId = null, businessProfileId = null } = profiles || {};
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, { adminId, role }, "Authenticated!"));
+});
+
 // Admin logout
 const adminLogout = asyncHandler(async (request, response) => {
     const adminId = request.admin._id;
@@ -91,4 +100,4 @@ const adminRefreshToken = asyncHandler(async (request, response) => {
     .json(new ApiResponse(200, null, "Refresh token for admin has been issued"));
 });
 
-module.exports = { adminLogin, adminLogout, adminRefreshToken };
+module.exports = { adminLogin, adminAuthCheck, adminLogout, adminRefreshToken };
