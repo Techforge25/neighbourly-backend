@@ -6,6 +6,9 @@ const sponsorSchema = new Schema({
     logo: { type: String, trim: true, required: true },
     personName: { type: String, trim: true, required: true },
 
+    // Area
+    suburb: { type: String, trim: true, required: true }, // 3 sponsors allowed per area
+
     // Business info
     businessName: { type: String, trim: true, required: true },
     serviceType: { type: String, trim: true, required: true },
