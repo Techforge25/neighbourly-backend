@@ -13,7 +13,7 @@ const sponsorSchema = new Schema({
     businessName: { type: String, trim: true, required: true },
     serviceType: { type: String, trim: true, required: true },
     contact: { type: String, trim: true, required: true },
-});
+}, { timestamps: true });
 
 // Model
 const Sponsor = model("Sponsor", sponsorSchema);
