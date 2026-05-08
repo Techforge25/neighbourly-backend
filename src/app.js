@@ -30,9 +30,11 @@ app.use("/api/v1/stats", statsRouter);
 
 // Import Admin Routes
 const adminAuthRouter = require("./routes/admin/adminAuthRoute");
+const sponsorManagementRouter = require("./routes/admin/sponsorManagementRoute");
 
 // Registered Routes
 app.use("/api/v1/admin/auth", adminAuthRouter);
+app.use("/api/v1/admin/sponsorManagement", sponsorManagementRouter);
 
 // API status route
 app.get("/", (request, response) => response.send(`Neighbourly backend-server is up and running at port ${port}`));
