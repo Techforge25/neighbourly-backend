@@ -30,11 +30,13 @@ app.use("/api/v1/stats", statsRouter);
 
 // Import Admin Routes
 const adminAuthRouter = require("./routes/admin/adminAuthRoute");
+const dashboardRouter = require("./routes/admin/dashboardRoute");
 const sponsorManagementRouter = require("./routes/admin/sponsorManagementRoute");
 const recommendationManagementRoute = require("./routes/admin/recommendationManagementRoute");
 
-// Registered Routes
+// Registered Admin Routes
 app.use("/api/v1/admin/auth", adminAuthRouter);
+app.use("/api/v1/admin/dashboard", dashboardRouter);
 app.use("/api/v1/admin/sponsor", sponsorManagementRouter);
 app.use("/api/v1/admin/recommendation", recommendationManagementRoute);
 
