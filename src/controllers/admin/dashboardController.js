@@ -59,9 +59,8 @@ const fetchTopRecommenderByCategory = asyncHandler(async (request, response) => 
         { $limit: 5 },
 
         // Projection
-        { $project:{ _id: 0 } }
+        { $project:{ _id: 0, count:0 } }
     ]);
-
     if(!topRecommenders.length) return response.status(200).json(new ApiResponse(200, emptyList, "No recommenders found"));
 
     // Response
