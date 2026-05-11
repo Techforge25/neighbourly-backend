@@ -1,11 +1,14 @@
 const { Router } = require("express");
 const { adminAuthentication } = require("../../middlewares/adminAuth");
-const { fetchDashboardStats } = require("../../controllers/admin/dashboardController");
+const { fetchDashboardStats, fetchTopRecommenderByCategory } = require("../../controllers/admin/dashboardController");
 
 // Router instance
 const dashboardRouter = Router();
 
 // Fetch dashboard stats
 dashboardRouter.route("/stats").get(adminAuthentication, fetchDashboardStats);
+
+// Fetch top recommender by category
+dashboardRouter.route("/top-recommenders").get(adminAuthentication, fetchTopRecommenderByCategory);
 
 module.exports = dashboardRouter;

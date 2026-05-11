@@ -21,4 +21,48 @@ const fetchDashboardStats = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, payload, "Dashboard stats fetched successfully"));
 });
 
-module.exports = { fetchDashboardStats };
+// Fetch top recommender by category
+const fetchTopRecommenderByCategory = asyncHandler(async (request, response) => {
+    // Aggregation pipeline to fetch top recommender by category
+    const topRecommenders = await Recommendation.aggregate([
+        { $match: { status: "approved" } },
+
+        // Lookup business details
+        {
+            $lookup: {
+                from: "businesses",
+                localField: "businessId",
+                foreignField: "_id",
+                as: "business"
+            }
+        },
+
+        // Unwind business array
+        { $unwind: "$business" },
+
+        // Group data
+        { 
+            $group: { 
+                _id: "$businessId", 
+                count: { $sum: 1 },
+                businessName: { $first: "$business.businessName" },
+                personName: { $first: "$business.personName" },
+                serviceType: { $first: "$business.serviceType" },
+                recommendationCount: { $first: "$business.recommendationCount" }
+            } 
+        },
+
+        // Sort
+        { $sort: { count: -1 } },
+
+        // Limit
+        { $limit: 5 },
+    ]);
+
+    if(!topRecommenders.length) return response.status(200).json(new ApiResponse(200, emptyList, "No recommenders found"));
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, topRecommenders, "Top recommenders fetched successfully"));
+});
+
+module.exports = { fetchDashboardStats, fetchTopRecommenderByCategory };
