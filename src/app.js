@@ -35,8 +35,8 @@ const recommendationManagementRoute = require("./routes/admin/recommendationMana
 
 // Registered Routes
 app.use("/api/v1/admin/auth", adminAuthRouter);
-app.use("/api/v1/admin/sponsorManagement", sponsorManagementRouter);
-app.use("/api/v1/admin/recommendationManagement", recommendationManagementRoute);
+app.use("/api/v1/admin/sponsor", sponsorManagementRouter);
+app.use("/api/v1/admin/recommendation", recommendationManagementRoute);
 
 // API status route
 app.get("/", (request, response) => response.send(`Neighbourly backend-server is up and running at port ${port}`));
