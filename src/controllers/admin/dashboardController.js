@@ -67,4 +67,18 @@ const fetchTopRecommenderByCategory = asyncHandler(async (request, response) => 
     return response.status(200).json(new ApiResponse(200, topRecommenders, "Top recommenders fetched successfully"));
 });
 
-module.exports = { fetchDashboardStats, fetchTopRecommenderByCategory };
+// Fetch recent pending recommendations
+const fetchRecentPendingRecommendations = asyncHandler(async (request, response) => {
+    const recentPendingRecommendations = await Recommendation.find({ status: "approved" })
+    .populate([
+        { path: "businessId", select: "businessName" },
+        { path: "userId", select: "-_id address" },
+    ])
+    .sort({ createdAt: -1 }).limit(5).select("-_id -__v -createdAt -updatedAt -status -comment").lean();
+    if(!recentPendingRecommendations.length) return response.status(200).json(new ApiResponse(200, emptyList, "No pending recommendations found"));
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, recentPendingRecommendations, "Recent pending recommendations fetched successfully"));
+});
+
+module.exports = { fetchDashboardStats, fetchTopRecommenderByCategory, fetchRecentPendingRecommendations };
