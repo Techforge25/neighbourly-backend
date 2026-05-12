@@ -23,4 +23,30 @@ const createSponsor = asyncHandler(async (request, response) => {
     return response.status(201).json(new ApiResponse(201, null, "Sponsor created"));
 });
 
-module.exports = { createSponsor };
+// Fetch sponsors
+const fetchSponsors = asyncHandler(async (request, response) => {
+    // Get query params
+    const { page, limit } = request.query;
+
+    // Fetch
+    const sponsors = await Sponsor.aggregatePaginate([
+        // Sort
+        { $sort: { createdAt: -1 } },
+
+        // Projection
+        {
+            $project:{
+                personName: 1,
+                businessName: 1,
+                serviceType: 1,
+                suburb: 1,
+            }
+        },        
+    ], { page, limit });
+    if(!sponsors.totalDocs) return response.status(200).json(new ApiResponse(200, emptyList, "No sponsors found"));
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, sponsors, "Sponsors fetched successfully"));
+});
+
+module.exports = { createSponsor, fetchSponsors };
