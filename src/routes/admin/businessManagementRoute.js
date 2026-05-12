@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const { adminAuthentication } = require("../../middlewares/adminAuth");
-const { fetchBusinesses, viewBusiness } = require("../../controllers/admin/businessManagementController");
+const { fetchBusinesses, viewBusiness, deleteBusiness } = require("../../controllers/admin/businessManagementController");
 
 // Router instance
 const businessManagementRoute = Router();
@@ -8,7 +8,9 @@ const businessManagementRoute = Router();
 // Fetch businesses
 businessManagementRoute.route("/").get(adminAuthentication, fetchBusinesses);
 
-// View business
-businessManagementRoute.route("/:businessId").get(adminAuthentication, viewBusiness);
+// View business / Delete business
+businessManagementRoute.route("/:businessId")
+.get(adminAuthentication, viewBusiness)
+.delete(adminAuthentication, deleteBusiness);
 
 module.exports = businessManagementRoute;

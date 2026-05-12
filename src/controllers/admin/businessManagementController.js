@@ -1,3 +1,4 @@
+const { isValidObjectId } = require("mongoose");
 const { emptyList } = require("../../constants");
 const Business = require("../../models/businessModel");
 const ApiError = require("../../utils/ApiError");
@@ -114,6 +115,7 @@ const fetchBusinesses = asyncHandler(async (request, response) => {
 // View business
 const viewBusiness = asyncHandler(async (request, response) => {
     const { businessId } = request.params;
+    if(!isValidObjectId(businessId)) throw new ApiError(400, "Invalid business ID");
 
     // Fetch
     const [result] = await Business.aggregate([
@@ -173,4 +175,17 @@ const viewBusiness = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, result, "Business details fetched"));
 });
 
-module.exports = { fetchBusinesses, viewBusiness };
+// Delete business
+const deleteBusiness = asyncHandler(async (request, response) => {
+    const { businessId } = request.params;
+    if(!isValidObjectId(businessId)) throw new ApiError(400, "Invalid business ID");
+
+    // Delete
+    const business = await Business.findByIdAndDelete(businessId);
+    if(!business) throw new ApiError(404, "No business found");
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, null, "Business has been deleted"));
+});
+
+module.exports = { fetchBusinesses, viewBusiness, deleteBusiness };
