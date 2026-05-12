@@ -27,11 +27,17 @@ const createSponsor = asyncHandler(async (request, response) => {
 
 // Fetch sponsors
 const fetchSponsors = asyncHandler(async (request, response) => {
-    // Get query params
-    const { page, limit } = request.query;
+    const { page = 1, limit = 10, suburb } = request.query;
+
+    // Base filter
+    const filter = {};
+    if(suburb) filter.suburb = suburb;
 
     // Fetch
     const sponsors = await Sponsor.aggregatePaginate([
+        // Match        
+        { $match: filter },
+        
         // Sort
         { $sort: { createdAt: -1 } },
 
