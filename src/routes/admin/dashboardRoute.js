@@ -22,12 +22,10 @@ dashboardRouter.route("/recent-pending")
 dashboardRouter.route("/all-pending")
 .get(adminAuthentication, fetchAllPendingRecommendations);
 
-// View pending recommendation
+// View pending recommendation / Update recommendation status
 dashboardRouter.route("/recommendation/:recommendationId")
-.get(adminAuthentication, viewPendingRecommendation);
-
-// Approve / reject recommendation
-dashboardRouter.route("/recommendation/:recommendationId")
+.get(adminAuthentication, viewPendingRecommendation)
 .patch(adminAuthentication, updateRecommendationStatus);
+
 
 module.exports = dashboardRouter;
