@@ -33,12 +33,14 @@ const adminAuthRouter = require("./routes/admin/adminAuthRoute");
 const dashboardRouter = require("./routes/admin/dashboardRoute");
 const sponsorManagementRouter = require("./routes/admin/sponsorManagementRoute");
 const recommendationManagementRoute = require("./routes/admin/recommendationManagementRoute");
+const businessManagementRoute = require("./routes/admin/businessManagementRoute");
 
 // Registered Admin Routes
 app.use("/api/v1/admin/auth", adminAuthRouter);
 app.use("/api/v1/admin/dashboard", dashboardRouter);
 app.use("/api/v1/admin/sponsor", sponsorManagementRouter);
 app.use("/api/v1/admin/recommendation", recommendationManagementRoute);
+app.use("/api/v1/admin/business", businessManagementRoute);
 
 // API status route
 app.get("/", (request, response) => response.send(`Neighbourly backend-server is up and running at port ${port}`));
