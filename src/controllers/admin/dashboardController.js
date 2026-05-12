@@ -43,11 +43,13 @@ const fetchTopRecommenderByCategory = asyncHandler(async (request, response) => 
         // Unwind business array
         { $unwind: "$business" },
 
+        // Sort
+        { $sort: { "business.recommendationCount": -1, createdAt: -1 } },        
+
         // Group data
         { 
             $group: { 
                 _id: "$business.serviceType", 
-                count: { $sum: 1 },
                 businessName: { $first: "$business.businessName" },
                 personName: { $first: "$business.personName" },
                 serviceType: { $first: "$business.serviceType" },
@@ -55,14 +57,11 @@ const fetchTopRecommenderByCategory = asyncHandler(async (request, response) => 
             } 
         },
 
-        // Sort
-        { $sort: { count: -1, createdAt: -1 } },
-
         // Limit
         { $limit: 5 },
 
         // Projection
-        { $project:{ _id: 0, count:0 } }
+        { $project:{ _id: 0 } }
     ]);
     if(!topRecommenders.length) return response.status(200).json(new ApiResponse(200, emptyList, "No recommenders found"));
 
