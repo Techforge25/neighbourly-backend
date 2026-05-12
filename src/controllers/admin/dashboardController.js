@@ -1,10 +1,12 @@
 const { emptyList } = require("../../constants");
+const Business = require("../../models/businessModel");
 const Recommendation = require("../../models/recommendationsModel");
 const Sponsor = require("../../models/sponsorModel");
 const User = require("../../models/userModel");
 const ApiError = require("../../utils/ApiError");
 const ApiResponse = require("../../utils/ApiResponse");
 const asyncHandler = require("../../utils/asyncHandler");
+const convertToMongoId = require("../../utils/convertToMongoId");
 
 // Fetch dashboard stats
 const fetchDashboardStats = asyncHandler(async (request, response) => {
@@ -69,7 +71,7 @@ const fetchTopRecommenderByCategory = asyncHandler(async (request, response) => 
 
 // Fetch recent pending recommendations
 const fetchRecentPendingRecommendations = asyncHandler(async (request, response) => {
-    const recentPendingRecommendations = await Recommendation.find({ status: "approved" })
+    const recentPendingRecommendations = await Recommendation.find({ status: "pending" })
     .populate([
         { path: "businessId", select: "businessName" },
         { path: "userId", select: "-_id address" },
@@ -81,4 +83,130 @@ const fetchRecentPendingRecommendations = asyncHandler(async (request, response)
     return response.status(200).json(new ApiResponse(200, recentPendingRecommendations, "Recent pending recommendations fetched successfully"));
 });
 
-module.exports = { fetchDashboardStats, fetchTopRecommenderByCategory, fetchRecentPendingRecommendations };
+// Fetch all pending recommendations
+const fetchAllPendingRecommendations = asyncHandler(async (request, response) => {
+    const { page = 1, limit = 10, search, trade, suburb } = request.query;
+
+    // Base filter
+    const filter = { status: "approved" };
+
+    // Filters
+    if(trade) filter["business.serviceType"] = trade;
+    if(suburb) filter["user.address"] = suburb;
+    if(search) filter["business.personName"] = { $regex: search, $options: "i" };
+
+    // Aggregation
+    const pendingRecommendations = await Recommendation.aggregatePaginate([
+        // Approved for testing purpose, change to pending in production
+
+        // Lookup business details
+        { 
+            $lookup: {
+                from: "businesses",
+                localField: "businessId",
+                foreignField: "_id",
+                as: "business"
+            }
+        },
+
+        // Lookup user details
+        { 
+            $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user"
+            }
+        },
+
+        // Unwind business and user arrays
+        { $unwind: "$business" },
+        { $unwind: "$user" },
+
+        // Match pending recommendations
+        { $match: filter },
+
+        // Projection
+        { 
+            $project: {
+                businessId: "$business._id",
+                businessName: "$business.businessName",
+                personName: "$business.personName",
+                tradeCategory: "$business.serviceType",
+                suburb: "$user.address",
+                submissionDate: "$createdAt",
+                trustPoints: "$reasonsOfRecommendation"
+            }
+        }
+    ], { page, limit })
+    if(!pendingRecommendations.totalDocs) return response.status(200).json(new ApiResponse(200, emptyList, "No pending recommendations found"));
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, pendingRecommendations, "All pending recommendations fetched successfully"));
+});
+
+// View business recommendation
+const viewBusinessRecommendations = asyncHandler(async (request, response) => {
+    const { businessId } = request.params;
+
+    // Fetch
+    const [result] = await Business.aggregate([
+        // Match
+        { $match: { _id: convertToMongoId(businessId) } },
+
+        // Lookup recommendations
+        {
+            $lookup: {
+                from: "recommendations",
+                localField: "_id",
+                foreignField: "businessId",
+                as: "recommendations"
+            }
+        },
+
+        // Unwind recommendations
+        { $unwind: { path: "$recommendations", preserveNullAndEmptyArrays:true } },
+
+        // Lookup users for each recommendation
+        {
+            $lookup: {
+                from: "users",
+                localField: "recommendations.userId",
+                foreignField: "_id",
+                as: "user",
+                pipeline: [
+                    { $project: { _id:0, fullName: 1, email: 1, address: 1 } }
+                ]
+            }
+        },
+
+        // Unwind user
+        { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+
+        // Group back all recommendations
+        {
+            $group: {
+                _id: "$_id",
+                personName: { $first: "$personName" },
+                businessName: { $first: "$businessName" },
+                serviceType: { $first: "$serviceType" },
+
+                recommendations: {
+                    $push: {
+                        user: "$user",
+                        reasonsOfRecommendation: "$recommendations.reasonsOfRecommendation",
+                        comment: "$recommendations.comment",
+                        createdAt: "$recommendations.createdAt"
+                    }
+                }
+            }
+        }
+    ]);
+    if(!result) return response.status(200).json(new ApiResponse(200, null, "No recommendations found for this business"));
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, result, "Business recommendations fetched"));
+});
+
+module.exports = { fetchDashboardStats, fetchTopRecommenderByCategory, fetchRecentPendingRecommendations, 
+fetchAllPendingRecommendations, viewBusinessRecommendations };
