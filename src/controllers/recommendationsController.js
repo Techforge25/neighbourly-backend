@@ -204,7 +204,7 @@ const viewBusinessRecommendations = asyncHandler(async (request, response) => {
     const { businessId } = request.params;
 
     // Fetch
-    const result = await Business.aggregate([
+    const [result] = await Business.aggregate([
         // Match
         { $match: { _id: convertToMongoId(businessId) } },
 
@@ -257,9 +257,10 @@ const viewBusinessRecommendations = asyncHandler(async (request, response) => {
             }
         }
     ]);
+    if(!result) return response.status(200).json(new ApiResponse(200, null, "No recommendations found for this business"));
 
     // Response
-    return response.status(200).json(new ApiResponse(200, result[0], "Business recommendations fetched"));
+    return response.status(200).json(new ApiResponse(200, result, "Business recommendations fetched"));
 });
 
 module.exports = { createRecommendation, createRecommendationWithUserInfo, fetchRecommendations, viewBusinessRecommendations };
