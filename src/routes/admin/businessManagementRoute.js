@@ -1,10 +1,11 @@
 const { Router } = require("express");
 const { adminAuthentication } = require("../../middlewares/adminAuth");
+const { fetchBusinesses } = require("../../controllers/admin/businessManagementController");
 
 // Router instance
 const businessManagementRoute = Router();
 
-// Fetch recommendations
-businessManagementRoute.route("/").get(adminAuthentication);
+// Fetch businesses
+businessManagementRoute.route("/").get(adminAuthentication, fetchBusinesses);
 
 module.exports = businessManagementRoute;
