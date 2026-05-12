@@ -57,12 +57,12 @@ const updateSponsor = asyncHandler(async (request, response) => {
     const { sponsorId } = request.params;
     if(!isValidObjectId(sponsorId)) throw new ApiError(400, "Invalid sponsor id");
 
-    const { logo, personName, businessName, contact, suburb } = validatePayload(updateSponsorValidator, request.body) || {};
+    const { logo, personName, businessName, contact } = validatePayload(updateSponsorValidator, request.body) || {};
 
     // Update
     const sponsor = await Sponsor.findByIdAndUpdate(
         sponsorId, 
-        { $set: { logo, personName, businessName, contact, suburb } }, 
+        { $set: { logo, personName, businessName, contact } }, 
         { new: true }
     );
     if(!sponsor) throw new ApiError(404, "Sponsor not found");

@@ -22,8 +22,7 @@ const updateSponsorValidator = joi.object({
     businessName: joi.string().trim().min(2).max(50).label("Business name"),
     contact: joi.string().trim().max(15).pattern(contactPattern).messages({
         "string.pattern.base": "Contact number must be a valid international format (e.g., +923001234567)."
-    }).label("Contact"),
-    suburb: joi.string().trim().min(2).max(50).label("Suburb"),
+    }).label("Contact")
 });
 
 module.exports = { createSponsorValidator, updateSponsorValidator };

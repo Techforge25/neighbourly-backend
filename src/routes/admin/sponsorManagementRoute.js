@@ -12,7 +12,7 @@ sponsorManagementRouter.route("/")
 
 // Update / Delete sponsor
 sponsorManagementRouter.route("/:sponsorId")
-.put(adminAuthentication, updateSponsor)
+.patch(adminAuthentication, updateSponsor)
 .delete(adminAuthentication, deleteSponsor);
 
 module.exports = sponsorManagementRouter;
