@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const { adminAuthentication } = require("../../middlewares/adminAuth");
 const { fetchDashboardStats, fetchTopRecommenderByCategory, fetchRecentPendingRecommendations, 
-fetchAllPendingRecommendations, viewBusinessRecommendations, updateRecommendationStatus } = require("../../controllers/admin/dashboardController");
+fetchAllPendingRecommendations, viewPendingRecommendation, updateRecommendationStatus } = require("../../controllers/admin/dashboardController");
 
 // Router instance
 const dashboardRouter = Router();
@@ -22,9 +22,9 @@ dashboardRouter.route("/recent-pending")
 dashboardRouter.route("/all-pending")
 .get(adminAuthentication, fetchAllPendingRecommendations);
 
-// View business recommendations
-dashboardRouter.route("/business/:businessId")
-.get(adminAuthentication, viewBusinessRecommendations);
+// View pending recommendation
+dashboardRouter.route("/recommendation/:recommendationId")
+.get(adminAuthentication, viewPendingRecommendation);
 
 // Approve / reject recommendation
 dashboardRouter.route("/recommendation/:recommendationId")

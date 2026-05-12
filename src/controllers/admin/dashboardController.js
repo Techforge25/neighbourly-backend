@@ -128,7 +128,6 @@ const fetchAllPendingRecommendations = asyncHandler(async (request, response) =>
         // Projection
         { 
             $project: {
-                businessId: "$business._id",
                 businessName: "$business.businessName",
                 personName: "$business.personName",
                 tradeCategory: "$business.serviceType",
@@ -144,33 +143,34 @@ const fetchAllPendingRecommendations = asyncHandler(async (request, response) =>
     return response.status(200).json(new ApiResponse(200, pendingRecommendations, "All pending recommendations fetched successfully"));
 });
 
-// View business recommendation
-const viewBusinessRecommendations = asyncHandler(async (request, response) => {
-    const { businessId } = request.params;
+// View pending recommendation
+const viewPendingRecommendation = asyncHandler(async (request, response) => {
+    const { recommendationId } = request.params;
+    if(!isValidObjectId(recommendationId)) throw new ApiError(400, "Invalid recommendation ID");
 
-    // Fetch
-    const [result] = await Business.aggregate([
+    // Fetch pending recommendation
+    const [result] = await Recommendation.aggregate([
         // Match
-        { $match: { _id: convertToMongoId(businessId) } },
+        { $match: { _id: convertToMongoId(recommendationId) } },
 
-        // Lookup recommendations
+        // Lookup business
         {
             $lookup: {
-                from: "recommendations",
-                localField: "_id",
-                foreignField: "businessId",
-                as: "recommendations"
+                from: "businesses",
+                localField: "businessId",
+                foreignField: "_id",
+                as: "business",
+                pipeline: [
+                    { $project: { _id:0, businessName: 1, personName: 1, serviceType: 1 } }
+                ]
             }
         },
 
-        // Unwind recommendations
-        { $unwind: { path: "$recommendations", preserveNullAndEmptyArrays:true } },
-
-        // Lookup users for each recommendation
+        // Lookup user
         {
             $lookup: {
                 from: "users",
-                localField: "recommendations.userId",
+                localField: "userId",
                 foreignField: "_id",
                 as: "user",
                 pipeline: [
@@ -179,35 +179,27 @@ const viewBusinessRecommendations = asyncHandler(async (request, response) => {
             }
         },
 
+        // Unwind business
+        { $unwind: { path: "$business", preserveNullAndEmptyArrays: true } },
+
         // Unwind user
         { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
 
-        // Group back all recommendations
-        {
-            $group: {
-                _id: "$_id",
-                personName: { $first: "$personName" },
-                businessName: { $first: "$businessName" },
-                serviceType: { $first: "$serviceType" },
-
-                recommendations: {
-                    $push: {
-                        user: "$user",
-                        reasonsOfRecommendation: "$recommendations.reasonsOfRecommendation",
-                        comment: "$recommendations.comment",
-                        createdAt: "$recommendations.createdAt"
-                    }
-                }
-            }
-        },
-
         // Projection
-        { $project: { _id:0 } }
+        {
+            $project:{
+                business: 1,
+                user: 1,
+                comment: 1,
+                createdAt: 1,
+                reasonsOfRecommendation: 1,
+            }
+        }
     ]);
-    if(!result) return response.status(200).json(new ApiResponse(200, null, "No recommendations found for this business"));
+    if(!result) return response.status(200).json(new ApiResponse(200, null, "No pending recommendation found for this ID"));
 
     // Response
-    return response.status(200).json(new ApiResponse(200, result, "Business recommendations fetched"));
+    return response.status(200).json(new ApiResponse(200, result, "Pending recommendation fetched"));
 });
 
 // Approve / reject recommendation
@@ -239,4 +231,4 @@ const updateRecommendationStatus = asyncHandler(async (request, response) => {
 });
 
 module.exports = { fetchDashboardStats, fetchTopRecommenderByCategory, fetchRecentPendingRecommendations, 
-fetchAllPendingRecommendations, viewBusinessRecommendations, updateRecommendationStatus };
+fetchAllPendingRecommendations, viewPendingRecommendation, updateRecommendationStatus };
