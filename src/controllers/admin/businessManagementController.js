@@ -3,6 +3,7 @@ const Business = require("../../models/businessModel");
 const ApiError = require("../../utils/ApiError");
 const ApiResponse = require("../../utils/ApiResponse");
 const asyncHandler = require("../../utils/asyncHandler");
+const convertToMongoId = require("../../utils/convertToMongoId");
 const validatePayload = require("../../utils/validatePayload");
 
 // Fetch all businesses
@@ -110,4 +111,66 @@ const fetchBusinesses = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, businesses, "Businesses fetched successfully"));
 });
 
-module.exports = { fetchBusinesses };
+// View business
+const viewBusiness = asyncHandler(async (request, response) => {
+    const { businessId } = request.params;
+
+    // Fetch
+    const [result] = await Business.aggregate([
+        // Match
+        { $match: { _id: convertToMongoId(businessId) } },
+
+        // Lookup recommendations
+        {
+            $lookup: {
+                from: "recommendations",
+                localField: "_id",
+                foreignField: "businessId",
+                as: "recommendations"
+            }
+        },
+
+        // Unwind recommendations
+        { $unwind: { path: "$recommendations", preserveNullAndEmptyArrays:true } },
+
+        // Lookup users for each recommendation
+        {
+            $lookup: {
+                from: "users",
+                localField: "recommendations.userId",
+                foreignField: "_id",
+                as: "user",
+                pipeline: [
+                    { $project: { _id:0, fullName: 1, email: 1, address: 1 } }
+                ]
+            }
+        },
+
+        // Unwind user
+        { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+
+        // Group back all recommendations
+        {
+            $group: {
+                _id: "$_id",
+                recommendations: {
+                    $push: {
+                        user: "$user",
+                        reasonsOfRecommendation: "$recommendations.reasonsOfRecommendation",
+                        comment: "$recommendations.comment",
+                        createdAt: "$recommendations.createdAt"
+                    }
+                }
+            }
+        },
+
+        // Projection
+        { $project: { _id: 0 } }
+    ]);
+    if(!result) return response.status(200).json(new ApiResponse(200, null, "No business found for this ID"));
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, result, "Business details fetched"));
+});
+
+module.exports = { fetchBusinesses, viewBusiness };
