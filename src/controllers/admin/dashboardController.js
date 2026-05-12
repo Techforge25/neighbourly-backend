@@ -1,3 +1,4 @@
+const { isValidObjectId } = require("mongoose");
 const { emptyList } = require("../../constants");
 const Business = require("../../models/businessModel");
 const Recommendation = require("../../models/recommendationsModel");
@@ -208,5 +209,33 @@ const viewBusinessRecommendations = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, result, "Business recommendations fetched"));
 });
 
+// Approve / reject recommendation
+const updateRecommendationStatus = asyncHandler(async (request, response) => {
+    const { recommendationId } = request.params;
+    const { status } = request.body || {};
+
+    // Validate
+    if(!isValidObjectId(recommendationId)) throw new ApiError(400, "Invalid recommendation ID");
+    if(!status) throw new ApiError(400, "Status is required");
+    if(!["approved", "rejected"].includes(status)) throw new ApiError(400, "Status must be either approved or rejected");
+
+    // Find recommendation
+    const recommendation = await Recommendation.findById(recommendationId);
+    if(!recommendation) throw new ApiError(404, "Recommendation not found");
+
+    // Validate
+    if(recommendation.status !== "pending") throw new ApiError(400, "Only pending recommendations can be updated");
+
+    // Save status
+    recommendation.status = status;
+    await recommendation.save();
+
+    // Response message
+    const message = status === "approved" ? "Recommendation has been approved" : "Recommendation has been rejected";
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, { updatedStatus: recommendation.status }, message));
+});
+
 module.exports = { fetchDashboardStats, fetchTopRecommenderByCategory, fetchRecentPendingRecommendations, 
-fetchAllPendingRecommendations, viewBusinessRecommendations };
+fetchAllPendingRecommendations, viewBusinessRecommendations, updateRecommendationStatus };
