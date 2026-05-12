@@ -56,7 +56,7 @@ const fetchTopRecommenderByCategory = asyncHandler(async (request, response) => 
         },
 
         // Sort
-        { $sort: { count: -1 } },
+        { $sort: { count: -1, createdAt: -1 } },
 
         // Limit
         { $limit: 5 },
@@ -135,7 +135,10 @@ const fetchAllPendingRecommendations = asyncHandler(async (request, response) =>
                 submissionDate: "$createdAt",
                 trustPoints: "$reasonsOfRecommendation"
             }
-        }
+        },
+
+        // Sort
+        { $sort: { createdAt: -1 } }
     ], { page, limit })
     if(!pendingRecommendations.totalDocs) return response.status(200).json(new ApiResponse(200, emptyList, "No pending recommendations found"));
 
