@@ -1,9 +1,11 @@
+const { isValidObjectId } = require("mongoose");
+const { emptyList } = require("../../constants");
 const Sponsor = require("../../models/sponsorModel");
 const ApiError = require("../../utils/ApiError");
 const ApiResponse = require("../../utils/ApiResponse");
 const asyncHandler = require("../../utils/asyncHandler");
 const validatePayload = require("../../utils/validatePayload");
-const { createSponsorValidator } = require("../../validations/sponsorValidator");
+const { createSponsorValidator, updateSponsorValidator } = require("../../validations/sponsorValidator");
 
 // Create sponsor
 const createSponsor = asyncHandler(async (request, response) => {
@@ -49,4 +51,38 @@ const fetchSponsors = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, sponsors, "Sponsors fetched successfully"));
 });
 
-module.exports = { createSponsor, fetchSponsors };
+// Update sponsor
+const updateSponsor = asyncHandler(async (request, response) => {
+    // Get sponsor id
+    const { sponsorId } = request.params;
+    if(!isValidObjectId(sponsorId)) throw new ApiError(400, "Invalid sponsor id");
+
+    const { logo, personName, businessName, contact, suburb } = validatePayload(updateSponsorValidator, request.body) || {};
+
+    // Update
+    const sponsor = await Sponsor.findByIdAndUpdate(
+        sponsorId, 
+        { $set: { logo, personName, businessName, contact, suburb } }, 
+        { new: true }
+    );
+    if(!sponsor) throw new ApiError(404, "Sponsor not found");
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, null, "Sponsor updated successfully"));
+});
+
+// Delete sponsor
+const deleteSponsor = asyncHandler(async (request, response) => {
+    // Get sponsor id
+    const { sponsorId } = request.params;
+    if(!isValidObjectId(sponsorId)) throw new ApiError(400, "Invalid sponsor id");
+
+    // Delete
+    const sponsor = await Sponsor.findByIdAndDelete(sponsorId);
+    if(!sponsor) throw new ApiError(404, "Sponsor not found");
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, null, "Sponsor deleted successfully"));
+});
+
+module.exports = { createSponsor, fetchSponsors, updateSponsor, deleteSponsor };
