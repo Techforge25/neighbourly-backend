@@ -89,7 +89,7 @@ const fetchAllPendingRecommendations = asyncHandler(async (request, response) =>
     const { page = 1, limit = 10, search, trade, suburb } = request.query;
 
     // Base filter
-    const filter = { status: "approved" };
+    const filter = { status: "pending" };
 
     // Filters
     if(trade) filter["business.serviceType"] = trade;
@@ -98,8 +98,6 @@ const fetchAllPendingRecommendations = asyncHandler(async (request, response) =>
 
     // Aggregation
     const pendingRecommendations = await Recommendation.aggregatePaginate([
-        // Approved for testing purpose, change to pending in production
-
         // Lookup business details
         { 
             $lookup: {
@@ -201,7 +199,10 @@ const viewBusinessRecommendations = asyncHandler(async (request, response) => {
                     }
                 }
             }
-        }
+        },
+
+        // Projection
+        { $project: { _id:0 } }
     ]);
     if(!result) return response.status(200).json(new ApiResponse(200, null, "No recommendations found for this business"));
 
