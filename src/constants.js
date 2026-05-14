@@ -5,7 +5,7 @@ const frontendUrl = isProduction ? process.env.FRONTEND_URL : "http://localhost:
 
 // Cors options
 const corsOptions = {
-    origin:[process.env.ORIGIN, "http://localhost:3000", "https://department-institutions-hero-implementing.trycloudflare.com", "https://www.suburbsays.com.au"],
+    origin:[process.env.ORIGIN, "http://localhost:3000", "https://www.suburbsays.com.au"],
     credentials:true,
     methods:["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders:["Content-Type", "Authorization"]
@@ -18,7 +18,8 @@ const cookieOptions = {
     signed: true,
     maxAge: 1000 * 60 * 60 * 24 * 90,
     sameSite: isProduction ? "none" : "lax",
-    domain: isProduction ? ".beneighbourly.com.au" : "http://localhost:3000"
+    domain: ".beneighbourly.com.au",
+    path: "/"
 };
 
 // Empty list
