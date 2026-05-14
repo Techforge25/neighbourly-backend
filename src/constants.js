@@ -18,7 +18,7 @@ const cookieOptions = {
     signed: true,
     maxAge: 1000 * 60 * 60 * 24 * 90,
     sameSite: isProduction ? "none" : "lax",
-    domain: isProduction ? ".beneighbourly.com.au" : undefined
+    domain: isProduction ? ".beneighbourly.com.au" : "http://localhost:3000"
 };
 
 // Empty list
