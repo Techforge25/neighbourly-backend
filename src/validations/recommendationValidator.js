@@ -12,7 +12,7 @@ const createRecommendationValidator = joi.object({
     personName: joi.string().trim().min(3).max(30).pattern(alphaPattern).required().label("Person name"),
     businessName: joi.string().trim().min(3).max(50).required().label("Business name"),
     contact: joi.string().trim().max(15).pattern(contactPattern).required().messages({
-        "string.pattern.base": "Contact number must be a valid Australian format (e.g., +923001234567)."
+        "string.pattern.base": "Contact number must be a valid Australian format."
     }).label("Contact"),
     serviceType: joi.string().trim().min(3).max(50).pattern(alphaPattern).required().label("Service type"),
 
@@ -28,7 +28,7 @@ const createRecommendationWithUserInfoValidator = joi.object({
     // User info
     fullName: joi.string().trim().min(3).max(30).pattern(alphaPattern).required().label("User full name"),
     userContact: joi.string().trim().max(15).pattern(contactPattern).required().messages({
-        "string.pattern.base": "Contact number must be a valid Australian format (e.g., +923001234567)."
+        "string.pattern.base": "Contact number must be a valid Australian format."
     }).label("User contact"),
     userAddress: joi.string().trim().min(3).max(200).pattern(addressPattern).required().label("User address"),
 
@@ -36,7 +36,7 @@ const createRecommendationWithUserInfoValidator = joi.object({
     personName: joi.string().trim().min(3).max(30).pattern(alphaPattern).required().label("Person name"),
     businessName: joi.string().trim().min(3).max(50).required().label("Business name"),
     businessContact: joi.string().trim().max(15).pattern(contactPattern).required().messages({
-        "string.pattern.base": "Contact number must be a valid Australian format (e.g., +923001234567)."
+        "string.pattern.base": "Contact number must be a valid Australian format."
     }).label("Business contact"),
     serviceType: joi.string().trim().min(3).max(50).pattern(alphaPattern).required().label("Service type"),
 

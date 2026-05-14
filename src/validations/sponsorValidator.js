@@ -10,7 +10,7 @@ const createSponsorValidator = joi.object({
     businessName: joi.string().trim().min(2).max(100).required().label("Business name"),
     serviceType: joi.string().trim().min(2).max(50).required().label("Service type"),
     contact: joi.string().trim().max(15).pattern(contactPattern).required().messages({
-        "string.pattern.base": "Contact number must be a valid Australian format (e.g., +923001234567)."
+        "string.pattern.base": "Contact number must be a valid Australian format."
     }).label("Contact"),
     suburb: joi.string().trim().min(2).max(50).required().label("Suburb"),
 });
@@ -21,7 +21,7 @@ const updateSponsorValidator = joi.object({
     personName: joi.string().trim().min(2).max(50).label("Person name"),
     businessName: joi.string().trim().min(2).max(100).label("Business name"),
     contact: joi.string().trim().max(15).pattern(contactPattern).messages({
-        "string.pattern.base": "Contact number must be a valid Australian format (e.g., +923001234567)."
+        "string.pattern.base": "Contact number must be a valid Australian format."
     }).label("Contact")
 });
 
