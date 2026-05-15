@@ -126,25 +126,25 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
     // Show list flag
     let showFullList = true;
 
-    // If not logged-in
-    if(!request.user)
-    {
-        page = 1;
-        limit = 3;
-        showFullList = false;
-    }
-    else
-    {
-        // If not given any recommendation yet
-        const userId = request.user._id;
-        const user = await User.findOne({ _id:userId, isProfileCompleted:true }).select("isProfileCompleted").lean();
-        if(!user)
-        {
-            page = 1;
-            limit = 3;
-            showFullList = false;        
-        }
-    }
+    // // If not logged-in
+    // if(!request.user)
+    // {
+    //     page = 1;
+    //     limit = 3;
+    //     showFullList = false;
+    // }
+    // else
+    // {
+    //     // If not given any recommendation yet
+    //     const userId = request.user._id;
+    //     const user = await User.findOne({ _id:userId, isProfileCompleted:true }).select("isProfileCompleted").lean();
+    //     if(!user)
+    //     {
+    //         page = 1;
+    //         limit = 3;
+    //         showFullList = false;        
+    //     }
+    // }
 
     // Base filter
     const baseFilter = {};
