@@ -31,7 +31,8 @@ const fetchSponsors = asyncHandler(async (request, response) => {
 
     // Base filter
     const filter = {};
-    if(suburb) filter.suburb = suburb;
+    if(!suburb) return response.status(200).json(new ApiResponse(200, emptyList, "No sponsors found"));
+    filter.suburb = suburb;
 
     // Fetch
     const sponsors = await Sponsor.aggregatePaginate([
@@ -51,7 +52,7 @@ const fetchSponsors = asyncHandler(async (request, response) => {
             }
         },        
     ], { page, limit });
-    if(!sponsors.totalDocs) return response.status(200).json(new ApiResponse(200, emptyList, "No sponsors found"));
+    if(!sponsors.totalDocs) return response.status(200).json(new ApiResponse(200, emptyList, "No sponsors found in this suburb"));
 
     // Response
     return response.status(200).json(new ApiResponse(200, sponsors, "Sponsors fetched successfully"));
