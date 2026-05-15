@@ -21,12 +21,14 @@ const authRouter = require("./routes/authRoute");
 const recommendationRouter = require("./routes/recommendationRoute");
 const getInTouchRouter = require("./routes/getInTouchRoute");
 const statsRouter = require("./routes/statsRoute");
+const sponsorRoute = require("./routes/sponsorRoute");
 
 // Registered Routes
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/recommendation", recommendationRouter);
 app.use("/api/v1/getInTouch", getInTouchRouter);
 app.use("/api/v1/stats", statsRouter);
+app.use("/api/v1/sponsor", sponsorRoute);
 
 // Import Admin Routes
 const adminAuthRouter = require("./routes/admin/adminAuthRoute");
@@ -34,6 +36,7 @@ const dashboardRouter = require("./routes/admin/dashboardRoute");
 const sponsorManagementRouter = require("./routes/admin/sponsorManagementRoute");
 const recommendationManagementRoute = require("./routes/admin/recommendationManagementRoute");
 const businessManagementRoute = require("./routes/admin/businessManagementRoute");
+
 
 // Registered Admin Routes
 app.use("/api/v1/admin/auth", adminAuthRouter);
