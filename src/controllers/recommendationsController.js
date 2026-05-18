@@ -147,7 +147,7 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
     // }
 
     // Base filter
-    const baseFilter = {};
+    const baseFilter = { status:"approved" };
     if(filter) baseFilter["business.serviceType"] = { $regex: filter, $options: "i" };
     if(location) baseFilter['user.address'] = { $regex: location, $options: "i" }; 
     
