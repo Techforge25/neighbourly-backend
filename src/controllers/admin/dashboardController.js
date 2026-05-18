@@ -14,7 +14,7 @@ const fetchDashboardStats = asyncHandler(async (request, response) => {
     const [totalPendingRecommendations, totalSponsors, totalRecommendations] = await Promise.all([
         Recommendation.countDocuments({ status: "pending" }),
         Sponsor.countDocuments(),
-        Recommendation.countDocuments()
+        Recommendation.countDocuments({ status:{ $in:["approved"] } })
     ]);
 
     // Prepare payload
