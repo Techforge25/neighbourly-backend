@@ -58,11 +58,25 @@ const fetchSponsors = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, sponsors, "Sponsors fetched successfully"));
 });
 
+// View sponsor
+const viewSponsor = asyncHandler(async (request, response) => {
+    // Get sponsor id
+    const { sponsorId } = request.params;
+    if(!isValidObjectId(sponsorId)) throw new ApiError(400, "Invalid sponsor ID");
+
+    // Get sponsor
+    const sponsor = await Sponsor.findById(sponsorId).select("-_id -__v -updatedAt -createdAt").lean();
+    if(!sponsor) throw new ApiError(404, "Sponsor not found");
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, sponsor, "Sponsor has been fetched"));
+});
+
 // Update sponsor
 const updateSponsor = asyncHandler(async (request, response) => {
     // Get sponsor id
     const { sponsorId } = request.params;
-    if(!isValidObjectId(sponsorId)) throw new ApiError(400, "Invalid sponsor id");
+    if(!isValidObjectId(sponsorId)) throw new ApiError(400, "Invalid sponsor ID");
 
     const { logo, personName, businessName, contact } = validatePayload(updateSponsorValidator, request.body) || {};
 
@@ -92,4 +106,4 @@ const deleteSponsor = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, null, "Sponsor deleted successfully"));
 });
 
-module.exports = { createSponsor, fetchSponsors, updateSponsor, deleteSponsor };
+module.exports = { createSponsor, fetchSponsors, viewSponsor, updateSponsor, deleteSponsor };
