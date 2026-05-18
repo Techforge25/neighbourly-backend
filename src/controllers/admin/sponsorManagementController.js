@@ -45,6 +45,7 @@ const fetchSponsors = asyncHandler(async (request, response) => {
         // Projection
         {
             $project:{
+                logo:1,
                 personName: 1,
                 businessName: 1,
                 serviceType: 1,
