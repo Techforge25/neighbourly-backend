@@ -32,7 +32,7 @@ const fetchSponsors = asyncHandler(async (request, response) => {
     // Base filter
     const filter = {};
     if(!suburb) return response.status(200).json(new ApiResponse(200, emptyList, "No sponsors found"));
-    if(suburb && suburb !== "all") filter.suburb = suburb;
+    if(suburb && suburb !== "all") filter.suburb = suburb?.toLowerCase();
 
     // Fetch
     const sponsors = await Sponsor.aggregatePaginate([

@@ -13,7 +13,7 @@ const fetchBusinesses = asyncHandler(async (request, response) => {
 
     // Base filter
     const filter = {};
-    if(trade) filter.serviceType = trade;
+    if(trade) filter.serviceType = trade.toLowerCase();
     if(suburb) filter["users.address"] = suburb;
     if(search) filter["businessName"] = { $regex: search, $options: "i" };    
 
