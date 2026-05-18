@@ -280,6 +280,7 @@ const updateRecommendationStatus = asyncHandler(async (request, response) => {
     if(!status) throw new ApiError(400, "Status is required");
     if(!["approved", "rejected"].includes(status)) throw new ApiError(400, "Status must be either approved or rejected");
 
+
     // Find recommendation
     const recommendation = await Recommendation.findById(recommendationId);
     if(!recommendation) throw new ApiError(404, "Recommendation not found");
@@ -290,6 +291,11 @@ const updateRecommendationStatus = asyncHandler(async (request, response) => {
     // Save status
     recommendation.status = status;
     await recommendation.save();
+
+    if(status === "approved")
+    {
+        await Business.findByIdAndUpdate(recommendation.businessId, { $inc:{ recommendationCount:1 } });
+    }
 
     // Response message
     const message = status === "approved" ? "Recommendation has been approved" : "Recommendation has been rejected";
