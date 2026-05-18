@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const { adminAuthentication } = require("../../middlewares/adminAuth");
-const { createSponsor, fetchSponsors, deleteSponsor, updateSponsor } = require("../../controllers/admin/sponsorManagementController");
+const { createSponsor, fetchSponsors, deleteSponsor, 
+updateSponsor, viewSponsor } = require("../../controllers/admin/sponsorManagementController");
 
 // Router instance
 const sponsorManagementRouter = Router();
@@ -12,6 +13,7 @@ sponsorManagementRouter.route("/")
 
 // Update / Delete sponsor
 sponsorManagementRouter.route("/:sponsorId")
+.get(adminAuthentication, viewSponsor)
 .patch(adminAuthentication, updateSponsor)
 .delete(adminAuthentication, deleteSponsor);
 
