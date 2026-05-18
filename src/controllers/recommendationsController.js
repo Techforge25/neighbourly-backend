@@ -46,11 +46,7 @@ const createRecommendation = asyncHandler(async (request, response) => {
     {
         // Prevent multi-recommendations for each business by same user
         const recommendation = await Recommendation.findOne({ userId, businessId: business._id }).lean();
-        if(recommendation) throw new ApiError(400, "You have already given a recommendation to this business");
-
-        // Increment recommendation count
-        business.recommendationCount += 1;
-        await business.save();        
+        if(recommendation) throw new ApiError(400, "You have already given a recommendation to this business");       
     }
 
     // Save to db
@@ -97,11 +93,7 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
     {
         // Prevent multi-recommendations for each business by same user
         const recommendation = await Recommendation.findOne({ userId, businessId: business._id }).lean();
-        if(recommendation) throw new ApiError(400, "You have already given a recommendation to this business");    
-
-        // Increment recommendation count
-        business.recommendationCount += 1;
-        await business.save();        
+        if(recommendation) throw new ApiError(400, "You have already given a recommendation to this business");           
     }    
 
     // Save recommendation
