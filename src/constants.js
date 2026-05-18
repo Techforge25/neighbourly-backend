@@ -5,7 +5,7 @@ const frontendUrl = isProduction ? process.env.FRONTEND_URL : "http://localhost:
 
 // Cors options
 const corsOptions = {
-    origin:[process.env.ORIGIN, "http://localhost:3000", "https://www.suburbsays.com.au"],
+    origin:[process.env.ORIGIN, "http://localhost:3000", "https://www.suburbsays.com.au", "https://neighbourly-admin-panel-frontend.vercel.app"],
     credentials:true,
     methods:["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders:["Content-Type", "Authorization"]
