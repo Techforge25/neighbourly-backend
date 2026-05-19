@@ -56,6 +56,11 @@ const fetchSponsors = asyncHandler(async (request, response) => {
     ], { page, limit });
     if(!sponsors.totalDocs) return response.status(200).json(new ApiResponse(200, emptyList, "No sponsors found in this suburb"));
 
+    // Add field of isEnabled
+    sponsors.docs = sponsors.docs.map((sponsor) => (
+        { ...sponsor, isEnabled:true }
+    ))
+
     // Response
     return response.status(200).json(new ApiResponse(200, sponsors, "Sponsors fetched successfully"));
 });
