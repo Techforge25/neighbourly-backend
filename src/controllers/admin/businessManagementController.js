@@ -156,6 +156,9 @@ const viewBusiness = asyncHandler(async (request, response) => {
         // Unwind user
         { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
 
+        // Sort recommendations
+        { $sort: { "recommendations.createdAt": -1 } },        
+
         // Group back all recommendations
         {
             $group: {
