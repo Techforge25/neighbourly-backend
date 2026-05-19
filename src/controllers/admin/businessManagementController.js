@@ -44,20 +44,7 @@ const fetchBusinesses = asyncHandler(async (request, response) => {
 
         // Add computed fields
         {
-            $addFields: {
-                // Total approved recommendations
-                totalRecommendations: {
-                    $size: {
-                        $filter: {
-                            input: "$recommendations",
-                            as: "recommendation",
-                            cond: {
-                                $eq: ["$$recommendation.status", "approved"]
-                            }
-                        }
-                    }
-                },
-
+            $addFields: {               
                 // Trusted in (addresses)
                 trustedIn: {
                     $setUnion: [
@@ -102,7 +89,7 @@ const fetchBusinesses = asyncHandler(async (request, response) => {
                 tradeCategory: "$serviceType",
                 trustedIn: 1,
                 trustPoints: 1,
-                totalRecommendations: 1
+                totalRecommendations: "$recommendationCount"
             }
         }
     ], { page, limit });
