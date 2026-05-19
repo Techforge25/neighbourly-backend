@@ -118,7 +118,7 @@ const fetchAllPendingRecommendations = asyncHandler(async (request, response) =>
         },
 
         // Unwind business and user arrays
-        { $unwind: { path: "$business" } },
+        { $unwind: "$business" },
         { $unwind: { path: "$user" } },
 
         // Match pending recommendations
@@ -136,7 +136,8 @@ const fetchAllPendingRecommendations = asyncHandler(async (request, response) =>
                 suburb: "$user.address",
                 submissionDate: "$createdAt",
                 trustPoints: "$reasonsOfRecommendation",
-                comment: 1
+                comment: 1,
+                businessId:1,
             }
         },        
     ], { page, limit });
