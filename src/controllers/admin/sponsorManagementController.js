@@ -49,6 +49,7 @@ const fetchSponsors = asyncHandler(async (request, response) => {
                 personName: 1,
                 businessName: 1,
                 serviceType: 1,
+                contact: 1,
                 suburb: 1,
             }
         },        
