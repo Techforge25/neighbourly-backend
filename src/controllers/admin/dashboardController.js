@@ -84,103 +84,21 @@ const fetchRecentPendingRecommendations = asyncHandler(async (request, response)
 });
 
 // Fetch all pending recommendations
-// const fetchAllPendingRecommendations = asyncHandler(async (request, response) => {
-//     const { page = 1, limit = 10, search, trade, suburb } = request.query;
-
-//     // Base filter
-//     const filter = { status: "pending" };
-
-//     // Filters
-//     if(trade) filter["business.serviceType"] = trade;
-//     if(suburb) filter["user.address"] = suburb;
-//     if(search) filter["business.personName"] = { $regex: search, $options: "i" };
-
-//     // Aggregation
-//     const pendingRecommendations = await Recommendation.aggregatePaginate([
-//         // Lookup business details
-//         { 
-//             $lookup: {
-//                 from: "businesses",
-//                 localField: "businessId",
-//                 foreignField: "_id",
-//                 as: "business"
-//             }
-//         },
-
-//         // Lookup user details
-//         { 
-//             $lookup: {
-//                 from: "users",
-//                 localField: "userId",
-//                 foreignField: "_id",
-//                 as: "user"
-//             }
-//         },
-
-//         // Unwind business and user arrays
-//         { $unwind: { path:"$business", preserveNullAndEmptyArrays:true } },
-//         { $unwind: { path:"$user", preserveNullAndEmptyArrays:true } },
-
-//         // Match pending recommendations
-//         { $match: filter },
-
-//         // Projection
-//         { 
-//             $project: {
-//                 businessName: "$business.businessName",
-//                 personName: "$business.personName",
-//                 tradeCategory: "$business.serviceType",
-//                 suburb: "$user.address",
-//                 submissionDate: "$createdAt",
-//                 trustPoints: "$reasonsOfRecommendation"
-//             }
-//         },
-
-//         // Sort
-//         { $sort: { createdAt: -1 } }
-//     ], { page, limit })
-//     if(!pendingRecommendations.totalDocs) return response.status(200).json(new ApiResponse(200, emptyList, "No pending recommendations found"));
-
-//     // Response
-//     return response.status(200).json(new ApiResponse(200, pendingRecommendations, "All pending recommendations fetched successfully"));
-// });
-
-// Fetch all pending recommendations
 const fetchAllPendingRecommendations = asyncHandler(async (request, response) => {
     const { page = 1, limit = 10, search, trade, suburb } = request.query;
 
-    // Match filter
-    const filter = {
-        status: "pending"
-    };
+    // Base filter
+    const filter = { status: "pending" };
 
-    // Search filters
-    if (trade) {
-        filter["business.serviceType"] = trade;
-    }
+    // Filters
+    if(trade) filter["business.serviceType"] = trade;
+    if(suburb) filter["user.address"] = suburb;
+    if(search) filter["business.personName"] = { $regex: search, $options: "i" };
 
-    if (suburb) {
-        filter["user.address"] = suburb;
-    }
-
-    if (search) {
-        filter["business.personName"] = {
-            $regex: search,
-            $options: "i"
-        };
-    }
-
-    // Aggregation pipeline
-    const aggregate = Recommendation.aggregate([
-
-                // Sort FIRST
-        {
-            $sort: {
-                createdAt:1
-            }
-        },
-        // Lookup business
-        {
+    // Aggregation
+    const pendingRecommendations = await Recommendation.aggregatePaginate([
+        // Lookup business details
+        { 
             $lookup: {
                 from: "businesses",
                 localField: "businessId",
@@ -189,8 +107,8 @@ const fetchAllPendingRecommendations = asyncHandler(async (request, response) =>
             }
         },
 
-        // Lookup user
-        {
+        // Lookup user details
+        { 
             $lookup: {
                 from: "users",
                 localField: "userId",
@@ -199,69 +117,33 @@ const fetchAllPendingRecommendations = asyncHandler(async (request, response) =>
             }
         },
 
-        // Unwind
-        {
-            $unwind: {
-                path: "$business",
-                preserveNullAndEmptyArrays: true
-            }
-        },
+        // Unwind business and user arrays
+        { $unwind: { path: "$business" } },
+        { $unwind: { path: "$user" } },
 
-        {
-            $unwind: {
-                path: "$user",
-                preserveNullAndEmptyArrays: true
-            }
-        },
-
-        // Match filters
+        // Match pending recommendations
         { $match: filter },
+        
+        // Sort
+        { $sort: { createdAt: -1 } },        
 
         // Projection
-        {
+        { 
             $project: {
-                _id: 1,
-
                 businessName: "$business.businessName",
                 personName: "$business.personName",
-                serviceType: "$business.serviceType",
+                tradeCategory: "$business.serviceType",
                 suburb: "$user.address",
                 submissionDate: "$createdAt",
                 trustPoints: "$reasonsOfRecommendation",
-                status: 1
+                comment: 1
             }
-        }
-    ]);
-
-    // Paginate
-    const pendingRecommendations =
-        await Recommendation.aggregatePaginate(
-            aggregate,
-            {
-                page: Number(page),
-                limit: Number(limit)
-            }
-        );
-
-    // Empty response
-    if (!pendingRecommendations.totalDocs) {
-        return response.status(200).json(
-            new ApiResponse(
-                200,
-                emptyList,
-                "No pending recommendations found"
-            )
-        );
-    }
+        },        
+    ], { page, limit });
+    if(!pendingRecommendations.totalDocs) return response.status(200).json(new ApiResponse(200, emptyList, "No pending recommendations found"));
 
     // Response
-    return response.status(200).json(
-        new ApiResponse(
-            200,
-            pendingRecommendations,
-            "All pending recommendations fetched successfully"
-        )
-    );
+    return response.status(200).json(new ApiResponse(200, pendingRecommendations, "All pending recommendations fetched successfully"));
 });
 
 // View business recommendation
