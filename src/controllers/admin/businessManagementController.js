@@ -117,6 +117,11 @@ const viewBusiness = asyncHandler(async (request, response) => {
     const { businessId } = request.params;
     if(!isValidObjectId(businessId)) throw new ApiError(400, "Invalid business ID");
 
+    // Fetch business
+    const business = await Business.findById(businessId)
+    .select("-_id businessName personName serviceType").lean();
+    if(!business) throw new ApiError(404, "Business not found");
+
     // Fetch
     const [result] = await Business.aggregate([
         // Match
@@ -172,7 +177,7 @@ const viewBusiness = asyncHandler(async (request, response) => {
     if(!result) return response.status(200).json(new ApiResponse(200, null, "No business found for this ID"));
 
     // Response
-    return response.status(200).json(new ApiResponse(200, result, "Business details fetched"));
+    return response.status(200).json(new ApiResponse(200, { ...result, business }, "Business details fetched"));
 });
 
 // Delete business
