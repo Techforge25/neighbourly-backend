@@ -94,7 +94,6 @@ const verifyOTP = asyncHandler(async (request, response) => {
         await VerifiedUser.create({ userId:user._id });
     }
     
-    
     // Generate access token
     const accessToken = generateAccessToken({ _id: user._id, role: user.role });
 
