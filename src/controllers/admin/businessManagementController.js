@@ -140,6 +140,9 @@ const viewBusiness = asyncHandler(async (request, response) => {
         // Unwind recommendations
         { $unwind: { path: "$recommendations", preserveNullAndEmptyArrays:true } },
 
+        // Only approved recommendations
+        { $match: { "recommendations.status": "approved" } },        
+
         // Lookup users for each recommendation
         {
             $lookup: {
