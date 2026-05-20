@@ -10,7 +10,7 @@ const businessSchema = new Schema({
     serviceType: { type:String, trim:true, required:true },
 
     // Recommendation count
-    recommendationCount: { type:Number, default:1 }
+    recommendationCount: { type:Number, default: 0 }
 });
 
 // Pagination plugin
