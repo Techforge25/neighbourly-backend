@@ -17,7 +17,7 @@ const sendFeedback = asyncHandler(async (request, response) => {
     if(!result) throw new ApiError(500, "Failed to send feedback. Please try again later.");
 
     // Response
-    return response.status(200).json(new ApiResponse(200, "Feedback sent successfully."));
+    return response.status(200).json(new ApiResponse(200, null, "Feedback sent successfully."));
 }); 
 
 module.exports = { sendFeedback };
