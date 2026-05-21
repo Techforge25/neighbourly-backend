@@ -170,7 +170,8 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
                 businessContact: { $first: "$business.contact" },
                 addresses: { $addToSet: "$user.address" },
                 serviceType: { $first: "$business.serviceType" },
-                recommendationCount: { $first: "$business.recommendationCount" },
+                // recommendationCount: { $first: "$business.recommendationCount" },
+                recommendationCount: { $sum: 1 },
                 reasonsOfRecommendation: { $push: "$reasonsOfRecommendation" },
                 createdAt: { $first: "$business.createdAt" }
             }
