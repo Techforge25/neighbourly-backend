@@ -106,7 +106,7 @@ const viewBusiness = asyncHandler(async (request, response) => {
 
     // Fetch business
     const business = await Business.findById(businessId)
-    .select("-_id businessName personName serviceType").lean();
+    .select("-_id businessName personName serviceType contact").lean();
     if(!business) throw new ApiError(404, "Business not found");
 
     // Fetch
@@ -138,7 +138,7 @@ const viewBusiness = asyncHandler(async (request, response) => {
                 foreignField: "_id",
                 as: "user",
                 pipeline: [
-                    { $project: { _id:0, fullName: 1, email: 1, address: 1 } }
+                    { $project: { _id:0, fullName: 1, email: 1, address: 1, contact:1 } }
                 ]
             }
         },

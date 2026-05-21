@@ -231,7 +231,7 @@ const viewPendingRecommendation = asyncHandler(async (request, response) => {
                 foreignField: "_id",
                 as: "business",
                 pipeline: [
-                    { $project: { _id:0, businessName: 1, personName: 1, serviceType: 1 } }
+                    { $project: { _id:0, businessName: 1, personName: 1, serviceType: 1, contact: 1 } }
                 ]
             }
         },
@@ -244,7 +244,7 @@ const viewPendingRecommendation = asyncHandler(async (request, response) => {
                 foreignField: "_id",
                 as: "user",
                 pipeline: [
-                    { $project: { _id:0, fullName: 1, email: 1, address: 1 } }
+                    { $project: { _id:0, fullName: 1, email: 1, address: 1, contact: 1 } }
                 ]
             }
         },
