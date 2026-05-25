@@ -139,28 +139,44 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
     // }
 
     // Base filter
-    const baseFilter = { status:"approved" };
+    const baseFilter = { status: "approved" };
     if(filter) baseFilter["business.serviceType"] = { $regex: filter, $options: "i" };
-    if(location) baseFilter['user.address'] = location; 
-    
-    // Aggregation
-    const aggregation = Recommendation.aggregate([     
-        // Lookup inside business
-        { $lookup:{ from: "businesses", localField: "businessId", foreignField: "_id", as: "business" } },
 
-        // Lookup inside user
-        { $lookup:{ from: "users", localField: "userId", foreignField: "_id", as: "user" } },
+    // Aggregation
+    const aggregation = Recommendation.aggregate([
+        // Lookup business
+        {
+            $lookup: {
+                from: "businesses",
+                localField: "businessId",
+                foreignField: "_id",
+                as: "business"
+            }
+        },
+
+        // Lookup user
+        {
+            $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user"
+            }
+        },
 
         // Unwind
         { $unwind: { path: "$business", preserveNullAndEmptyArrays: true } },
         { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
-        
-        // Match filter and minimum recommendation count
-        { 
-            $match:{ ...baseFilter, "business.recommendationCount":{ $gte:3 }, status: "approved" } 
-        },    
 
-        // Group by business to remove duplicates
+        // Match approved + service filter
+        {
+            $match: {
+                ...baseFilter,
+                "business.recommendationCount": { $gte: 3 }
+            }
+        },
+
+        // Group by business
         {
             $group: {
                 _id: "$business._id",
@@ -168,21 +184,29 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
                 personName: { $first: "$business.personName" },
                 businessName: { $first: "$business.businessName" },
                 businessContact: { $first: "$business.contact" },
-                addresses: { $addToSet: "$user.address" },
                 serviceType: { $first: "$business.serviceType" },
-                // recommendationCount: { $first: "$business.recommendationCount" },
+
+                // IMPORTANT
+                addresses: { $addToSet: "$user.address" },
                 recommendationCount: { $sum: 1 },
                 reasonsOfRecommendation: { $push: "$reasonsOfRecommendation" },
                 createdAt: { $first: "$business.createdAt" }
             }
         },
 
-        // Sort by recommendation count descending
+        // FILTER AFTER GROUPING
+        ...(location
+            ? [
+                { $match: { addresses: location } }
+            ]
+            : []),
+
+        // Sort
         { $sort: { recommendationCount: -1, createdAt: -1, businessId: 1 } },
 
         // Project
-        { $project:{ _id:0, createdAt:0 } },        
-    ]);    
+        { $project: { _id: 0, createdAt: 0 } }
+    ]);       
 
     // Execute query with pagination
     const recommendations = await Recommendation.aggregatePaginate(aggregation, { page, limit });
