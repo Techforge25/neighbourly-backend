@@ -12,7 +12,7 @@ const fetchBusinesses = asyncHandler(async (request, response) => {
     const { page = 1, limit = 10, trade, suburb, search } = request.query;
 
     // Base filter
-    const filter = {};
+    const filter = { recommendationCount: { $gte: 1 } };
     if(trade) filter.serviceType = trade;
     if(suburb) filter["users.address"] = suburb;
     if(search) filter["businessName"] = { $regex: search, $options: "i" };    
