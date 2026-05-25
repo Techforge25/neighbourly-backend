@@ -188,7 +188,17 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
 
                 // IMPORTANT
                 addresses: { $addToSet: "$user.address" },
-                recommendationCount: { $sum: 1 },
+                recommendationCount: {
+                    $sum: {
+                        $cond: [
+                            location
+                                ? { $eq: ["$user.address", location] }
+                                : true,
+                            1,
+                            0
+                        ]
+                    }
+                },
                 reasonsOfRecommendation: { $push: "$reasonsOfRecommendation" },
                 createdAt: { $first: "$business.createdAt" }
             }
@@ -197,9 +207,13 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
         // FILTER AFTER GROUPING
         ...(location
             ? [
-                { $match: { addresses: location } }
+                {
+                    $match: {
+                        recommendationCount: { $gt: 0 }
+                    }
+                }
             ]
-            : []),
+            : []),        
 
         // Sort
         { $sort: { recommendationCount: -1, createdAt: -1, businessId: 1 } },
