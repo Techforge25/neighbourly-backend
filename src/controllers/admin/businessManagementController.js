@@ -80,6 +80,9 @@ const fetchBusinesses = asyncHandler(async (request, response) => {
             }
         },
 
+        // Sort
+        { $sort:{ createdAt: -1 } },
+
         // Projection
         {
             $project: {
