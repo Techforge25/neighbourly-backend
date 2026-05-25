@@ -141,7 +141,7 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
     // Base filter
     const baseFilter = { status:"approved" };
     if(filter) baseFilter["business.serviceType"] = { $regex: filter, $options: "i" };
-    if(location) baseFilter['user.address'] = { $regex: location, $options: "i" }; 
+    if(location) baseFilter['user.address'] = location; 
     
     // Aggregation
     const aggregation = Recommendation.aggregate([     
