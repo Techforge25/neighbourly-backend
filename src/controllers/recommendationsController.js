@@ -113,7 +113,7 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
 
 // Fetch recommendations
 const fetchRecommendations = asyncHandler(async (request, response) => {
-    let { page = 1, limit = 10, filter, location } = request.query;
+    let { page = 1, limit = 9, filter, location } = request.query;
 
     // Show list flag
     let showFullList = true;
