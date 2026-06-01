@@ -171,7 +171,11 @@ const viewBusiness = asyncHandler(async (request, response) => {
         // Projection
         { $project: { _id: 0 } }
     ]);
-    if(!result) return response.status(200).json(new ApiResponse(200, null, "No business found for this ID"));
+    if(!result)
+    {
+        return response.status(200)
+        .json(new ApiResponse(200, { recommendations:[], business }, "No approved recommendations found for this business"));
+    }
 
     // Response
     return response.status(200).json(new ApiResponse(200, { ...result, business }, "Business details fetched"));
