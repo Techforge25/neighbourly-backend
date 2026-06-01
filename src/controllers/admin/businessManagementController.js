@@ -159,6 +159,7 @@ const viewBusiness = asyncHandler(async (request, response) => {
                 recommendations: {
                     $push: {
                         user: "$user",
+                        recommendationId: "$recommendations._id",
                         reasonsOfRecommendation: "$recommendations.reasonsOfRecommendation",
                         comment: "$recommendations.comment",
                         createdAt: "$recommendations.createdAt"
