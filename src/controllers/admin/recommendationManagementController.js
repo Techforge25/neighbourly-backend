@@ -39,11 +39,17 @@ const deleteRecommendation = asyncHandler(async (request, response) => {
         if(!recommendation) throw new ApiError(404, "Recommendation not found");
 
         // Exclude count
-        await Business.findByIdAndUpdate(
+        const business = await Business.findByIdAndUpdate(
             recommendation.businessId,
             { $inc:{ recommendationCount: -1 } },
-            { session: dbSession }
-        );
+            { new: true, session: dbSession }
+        );  
+
+        // Delete business if count less than 1
+        if(business && business.recommendationCount <= 0)
+        {
+            await Business.findByIdAndDelete(recommendation.businessId, { session: dbSession });
+        }
 
         // Commit transaction
         await dbSession.commitTransaction();
@@ -54,6 +60,7 @@ const deleteRecommendation = asyncHandler(async (request, response) => {
     catch(error)
     {
         await dbSession.abortTransaction();
+        throw error;
     }
     finally
     {
