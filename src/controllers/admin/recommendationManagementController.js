@@ -1,9 +1,12 @@
+const { isValidObjectId } = require("mongoose");
 const { emptyList } = require("../../constants");
 const Recommendation = require("../../models/recommendationsModel");
 const ApiError = require("../../utils/ApiError");
 const ApiResponse = require("../../utils/ApiResponse");
 const asyncHandler = require("../../utils/asyncHandler");
 const validatePayload = require("../../utils/validatePayload");
+const mongoose = require("mongoose");
+const Business = require("../../models/businessModel");
 
 // Fetch recommendations
 const fetchRecommendations = asyncHandler(async (request, response) => {
@@ -20,4 +23,42 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, recommendations, "Fetch recommendations"));
 });
 
-module.exports = { fetchRecommendations };
+// Delete recommendation
+const deleteRecommendation = asyncHandler(async (request, response) => {
+    const { recommendationId } = request.params;
+    if(!isValidObjectId(recommendationId)) throw new ApiError(400, "Invalid Recommendation ID"); 
+    
+    // Start db session
+    const dbSession = await mongoose.startSession();
+    dbSession.startTransaction();
+
+    try
+    {
+        // Delete recommendation
+        const recommendation = await Recommendation.findByIdAndDelete(recommendationId, { session:dbSession });
+        if(!recommendation) throw new ApiError(404, "Recommendation not found");
+
+        // Exclude count
+        await Business.findByIdAndUpdate(
+            recommendation.businessId,
+            { $inc:{ recommendationCount: -1 } },
+            { session: dbSession }
+        );
+
+        // Commit transaction
+        await dbSession.commitTransaction();
+
+        // Response
+        return response.status(200).json(new ApiResponse(200, null, "Recommendation has been deleted"));        
+    }
+    catch(error)
+    {
+        await dbSession.abortTransaction();
+    }
+    finally
+    {
+        dbSession.endSession();
+    }
+});
+
+module.exports = { fetchRecommendations, deleteRecommendation };
