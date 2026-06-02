@@ -1,4 +1,4 @@
-const { isValidObjectId } = require("mongoose");
+const { isValidObjectId, default: mongoose } = require("mongoose");
 const { emptyList } = require("../../constants");
 const Business = require("../../models/businessModel");
 const ApiError = require("../../utils/ApiError");
@@ -6,6 +6,7 @@ const ApiResponse = require("../../utils/ApiResponse");
 const asyncHandler = require("../../utils/asyncHandler");
 const convertToMongoId = require("../../utils/convertToMongoId");
 const validatePayload = require("../../utils/validatePayload");
+const Recommendation = require("../../models/recommendationsModel");
 
 // Fetch all businesses
 const fetchBusinesses = asyncHandler(async (request, response) => {
@@ -186,9 +187,27 @@ const deleteBusiness = asyncHandler(async (request, response) => {
     const { businessId } = request.params;
     if(!isValidObjectId(businessId)) throw new ApiError(400, "Invalid business ID");
 
-    // Delete
-    const business = await Business.findByIdAndDelete(businessId);
-    if(!business) throw new ApiError(404, "No business found");
+    // Start db session
+    const dbSession = await mongoose.startSession();
+    dbSession.startTransaction();
+    try
+    {
+        // Delete business
+        const business = await Business.findByIdAndDelete(businessId, { session: dbSession });
+        if(!business) throw new ApiError(404, "Business not found");
+
+        // Delete all related recommendations to this business
+        const recommendation = await Recommendation.deleteMany({ businessId }, { session: dbSession });
+    }
+    catch(error)
+    {
+        await dbSession.abortTransaction();
+        throw error;
+    }
+    finally
+    {
+        dbSession.endSession();
+    }
 
     // Response
     return response.status(200).json(new ApiResponse(200, null, "Business has been deleted"));
