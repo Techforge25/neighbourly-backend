@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const { adminAuthentication } = require("../../middlewares/adminAuth");
-const { createCluster, fetchClusters, deleteCluster } = require("../../controllers/admin/clusterManagementController");
+const { createCluster, fetchClusters, updateCluster, deleteCluster } = require("../../controllers/admin/clusterManagementController");
 
 // Router instance
 const clusterManagementRoute = Router();
@@ -12,6 +12,7 @@ clusterManagementRoute.route("/")
 
 // Delete cluster
 clusterManagementRoute.route("/:clusterId")
+.put(adminAuthentication, updateCluster)
 .delete(adminAuthentication, deleteCluster);
 
 module.exports = clusterManagementRoute;

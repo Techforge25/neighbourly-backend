@@ -6,7 +6,7 @@ const asyncHandler = require("../../utils/asyncHandler");
 const validatePayload = require("../../utils/validatePayload");
 const Cluster = require("../../models/clusterModel");
 const Suburb = require("../../models/suburbModel");
-const { createClusterValidator } = require("../../validations/clusterValidator");
+const { createClusterValidator, updateClusterValidator } = require("../../validations/clusterValidator");
 
 // Create cluster
 const createCluster = asyncHandler(async (request, response) => {
@@ -53,6 +53,28 @@ const fetchClusters = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, cluster, "Clusters have been fetched"));
 }); 
 
+// Update cluster
+const updateCluster = asyncHandler(async (request, response) => {
+    const { clusterId } = request.params;
+    if(!isValidObjectId(clusterId)) throw new ApiError(400, "Invalid Cluster ID");
+
+    // Get validated payload
+    const { name, description } = validatePayload(updateClusterValidator, request.body);
+
+    // Find cluster
+    const cluster = await Cluster.findOne({ name });
+
+    // Prevent name duplication
+    if(cluster && String(clusterId) !== String(cluster._id)) throw new ApiError(400, "The cluster with this name has already exist");
+    
+    // Update
+    const update = await Cluster.findByIdAndUpdate(clusterId, { $set:{ name, description } });
+    if(!update) throw new ApiError(500, "Failed to update cluster");
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, { name, description }, "Cluster has been updated"));
+});
+
 // Delete cluster
 const deleteCluster = asyncHandler(async (request, response) => {
     const { clusterId } = request.params;
@@ -66,4 +88,4 @@ const deleteCluster = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, null, "Cluster has been deleted"));
 });
 
-module.exports = { createCluster, fetchClusters, deleteCluster };
+module.exports = { createCluster, fetchClusters, updateCluster, deleteCluster };
