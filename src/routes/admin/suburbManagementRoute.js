@@ -5,7 +5,7 @@ const { createSuburb } = require("../../controllers/admin/suburbManagementContro
 // Router instance
 const suburbManagementRoute = Router();
 
-// Fetch Suburbs
+// Create Suburbs
 suburbManagementRoute.route("/:clusterId").post(adminAuthentication, createSuburb);
 
 module.exports = suburbManagementRoute;
