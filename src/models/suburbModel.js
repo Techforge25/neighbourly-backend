@@ -3,7 +3,7 @@ const { Schema, model } = require("mongoose");
 // Schema
 const suburbSchema = new Schema({
     clusterId: { type:Schema.Types.ObjectId, ref:"Cluster", required:true },
-    name: { type:String, trim:true, required:true },
+    name: { type:String, trim:true, required:true, unique:[true, "Suburb with this name has laready exist"] },
     description: { type:String, trim:true, default:null }
 }, { timestamps: true });
 
