@@ -6,4 +6,10 @@ const createClusterValidator = joi.object({
     description: joi.string().trim().optional().allow(null, "").max(2000).required().label("Description")
 });
 
-module.exports = { createClusterValidator };
+// Update cluster validator
+const updateClusterValidator = joi.object({
+    name: joi.string().trim().min(2).max(50).required().label("Cluster"),
+    description: joi.string().trim().optional().allow(null, "").max(2000).required().label("Description")
+});
+
+module.exports = { createClusterValidator, updateClusterValidator };
