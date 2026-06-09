@@ -37,6 +37,7 @@ const sponsorManagementRouter = require("./routes/admin/sponsorManagementRoute")
 const recommendationManagementRoute = require("./routes/admin/recommendationManagementRoute");
 const businessManagementRoute = require("./routes/admin/businessManagementRoute");
 const suburbManagementRoute = require("./routes/admin/suburbManagementRoute");
+const clusterManagementRoute = require("./routes/admin/clusterManagementRoute");
 
 
 // Registered Admin Routes
@@ -46,6 +47,7 @@ app.use("/api/v1/admin/sponsor", sponsorManagementRouter);
 app.use("/api/v1/admin/recommendation", recommendationManagementRoute);
 app.use("/api/v1/admin/business", businessManagementRoute);
 app.use("/api/v1/admin/suburb", suburbManagementRoute);
+app.use("/api/v1/admin/cluster", clusterManagementRoute);
 
 // API status route
 app.get("/", (request, response) => response.send(`Neighbourly backend-server is up and running at port ${port}`));
