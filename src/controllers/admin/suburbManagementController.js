@@ -16,7 +16,7 @@ const createSuburb = asyncHandler(async (request, response) => {
     // Get validated payload
     const { name, description } = validatePayload(createSuburbValidator, request.body);
 
-    const [exist, cluster, suburbCount] = await Promise.call([
+    const [exist, cluster, suburbCount] = await Promise.all([
         // Prevent name duplication
         Suburb.exists({ name }),
 
