@@ -16,12 +16,20 @@ const createSuburb = asyncHandler(async (request, response) => {
     // Get validated payload
     const { name, description } = validatePayload(createSuburbValidator, request.body);
 
-    // Find cluster
-    const cluster = await Cluster.findById(clusterId).select("name").lean();
-    if(!cluster) throw new ApiError(404, "Cluster not found!");
+    const [exist, cluster, suburbCount] = await Promise.call([
+        // Prevent name duplication
+        Suburb.exists({ name }),
 
-    // Get count
-    const suburbCount = await Suburb.countDocuments({ clusterId });
+        // Find cluster
+        Cluster.findById(clusterId).select("name").lean(),
+
+        // Get count
+        Suburb.countDocuments({ clusterId })
+    ]);
+    
+    // Validate
+    if(exist) throw new ApiError(409, "The suburb with this name has already exist");
+    if(!cluster) throw new ApiError(404, "Cluster not found!");
     if(suburbCount >= 3) throw new ApiError(403, `${cluster.name} already have 3 suburbs`);
 
     // Save to db
