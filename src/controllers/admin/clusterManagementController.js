@@ -25,4 +25,45 @@ const createCluster = asyncHandler(async (request, response) => {
     return response.status(201).json(new ApiResponse(201, null, "Cluster has been created"));
 });
 
-module.exports = { createCluster };
+// Fetch clusters
+const fetchClusters = asyncHandler(async (request, response) => {
+    const { page = 1, limit = 10 } = request.query;
+
+    // Fetch
+    const cluster = await Cluster.aggregatePaginate([
+        { $match:{ } },
+
+        // Lookup suburb
+        {
+            $lookup:{
+                from: "suburbs",
+                localField: "_id",
+                foreignField: "clusterId",
+                as: "suburb",
+                pipeline:[ { $project:{ _id:0, name:1 } } ]
+            }
+        },
+
+        // Projection
+        { $project:{ name: 1, suburbs: "$suburb.name" } }
+    ], { page, limit });
+    if(!cluster.totalDocs) return response.status(200).json(new ApiResponse(200, emptyList, "No clusters found"));
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, cluster, "Clusters have been fetched"));
+}); 
+
+// Delete cluster
+const deleteCluster = asyncHandler(async (request, response) => {
+    const { clusterId } = request.params;
+    if(!isValidObjectId(clusterId)) throw new ApiError(400, "Invalid Cluster ID");
+
+    // Delete
+    const cluster = await Cluster.findByIdAndDelete(clusterId);
+    if(!cluster) throw new ApiError(404, "Cluster not found");
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, null, "Cluster has been deleted"));
+});
+
+module.exports = { createCluster, fetchClusters, deleteCluster };
