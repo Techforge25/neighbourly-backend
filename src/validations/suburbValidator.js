@@ -1,0 +1,9 @@
+const joi = require("joi");
+
+// Create suburb validator
+const createSuburbValidator = joi.object({
+    name: joi.string().trim().min(2).max(50).required().label("Suburb"),
+    description: joi.string().trim().optional().allow(null, "").max(2000).required().label("Description")
+});
+
+module.exports = { createSuburbValidator };
