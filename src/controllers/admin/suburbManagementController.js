@@ -78,4 +78,17 @@ const fetchSuburbs = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, suburbs, "Suburbs have been fetched"));
 });
 
-module.exports = { createSuburb, fetchSuburbs };
+// Delete suburbs
+const deleteSuburbs = asyncHandler(async (request, response) => {
+    const { suburbId } = request.params;
+    if(!isValidObjectId(suburbId)) throw new ApiError(400, "Invalid suburb ID");
+
+    // Delete
+    const suburb = await Suburb.findByIdAndDelete(suburbId);
+    if(!suburb) throw new ApiError(404, "Suburb not found");
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, null, "Suburb has been deleted"))
+});
+
+module.exports = { createSuburb, fetchSuburbs, deleteSuburbs };
