@@ -1,11 +1,16 @@
 const { Router } = require("express");
 const { adminAuthentication } = require("../../middlewares/adminAuth");
-const { createSuburb } = require("../../controllers/admin/suburbManagementController");
+const { createSuburb, fetchSuburbs } = require("../../controllers/admin/suburbManagementController");
 
 // Router instance
 const suburbManagementRoute = Router();
 
 // Create Suburbs
-suburbManagementRoute.route("/:clusterId").post(adminAuthentication, createSuburb);
+suburbManagementRoute.route("/:clusterId")
+.post(adminAuthentication, createSuburb);
+
+// Fetch Suburbs
+suburbManagementRoute.route("/")
+.get(adminAuthentication, fetchSuburbs);
 
 module.exports = suburbManagementRoute;

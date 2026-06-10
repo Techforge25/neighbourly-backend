@@ -40,4 +40,42 @@ const createSuburb = asyncHandler(async (request, response) => {
     return response.status(201).json(new ApiResponse(201, null, "Suburb has been created"));
 });
 
-module.exports = { createSuburb };
+// Fetch suburbs
+const fetchSuburbs = asyncHandler(async (request, response) => {
+    const { page = 1, limit = 10 } = request.query;
+    
+    // Fetch
+    const suburbs = await Suburb.aggregatePaginate([
+        { $match:{} },
+
+        // Lookup cluster
+        {
+            $lookup:{
+                from: "clusters",
+                localField: "clusterId",
+                foreignField: "_id",
+                as: "cluster"
+            }
+        },
+
+        // Unwind
+        { $unwind:{ path:"$cluster", preserveNullAndEmptyArrays:true } },
+
+        // Sort
+        { $sort:{ createdAt: -1 } },
+
+        // Projection
+        {
+            $project:{
+                name: 1,
+                assignedCluster: "$cluster.name"
+            }
+        }
+    ]);
+    if(!suburbs.totalDocs) return response.status(200).json(new ApiResponse(200, emptyList, "No suburbs found"));
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, suburbs, "Suburbs have been fetched"));
+});
+
+module.exports = { createSuburb, fetchSuburbs };
