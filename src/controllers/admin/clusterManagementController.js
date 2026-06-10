@@ -44,6 +44,9 @@ const fetchClusters = asyncHandler(async (request, response) => {
             }
         },
 
+        // Sort
+        { $sort: { createdAt: -1 } },
+
         // Projection
         { $project:{ name: 1, suburbs: "$suburb.name" } }
     ], { page, limit });
