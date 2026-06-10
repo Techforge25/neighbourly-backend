@@ -10,7 +10,7 @@ suburbManagementRoute.route("/")
 .post(adminAuthentication, createSuburb)
 .get(adminAuthentication, fetchSuburbs);
 
-// Delete Suburb
+// Update / Delete Suburb
 suburbManagementRoute.route("/:suburbId")
 .put(adminAuthentication, updateSuburb)
 .delete(adminAuthentication, deleteSuburb);
