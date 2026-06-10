@@ -1,20 +1,18 @@
 const { Router } = require("express");
 const { adminAuthentication } = require("../../middlewares/adminAuth");
-const { createSuburb, fetchSuburbs, deleteSuburbs } = require("../../controllers/admin/suburbManagementController");
+const { createSuburb, fetchSuburbs, updateSuburb, deleteSuburb } = require("../../controllers/admin/suburbManagementController");
 
 // Router instance
 const suburbManagementRoute = Router();
 
-// Create Suburb
-suburbManagementRoute.route("/:clusterId")
-.post(adminAuthentication, createSuburb);
-
-// Fetch Suburbs
+// Create / Fetch Suburbs
 suburbManagementRoute.route("/")
+.post(adminAuthentication, createSuburb)
 .get(adminAuthentication, fetchSuburbs);
 
 // Delete Suburb
 suburbManagementRoute.route("/:suburbId")
-.delete(adminAuthentication, deleteSuburbs);
+.put(adminAuthentication, updateSuburb)
+.delete(adminAuthentication, deleteSuburb);
 
 module.exports = suburbManagementRoute;

@@ -10,12 +10,13 @@ const Suburb = require("../../models/suburbModel");
 
 // Create suburb
 const createSuburb = asyncHandler(async (request, response) => {
-    const { clusterId } = request.params;
+    // Get validated payload
+    const { clusterId, name, description } = validatePayload(createSuburbValidator, request.body);
+
+    // Validate ID
     if(!isValidObjectId(clusterId)) throw new ApiError(400, "Invalid cluster ID");
 
-    // Get validated payload
-    const { name, description } = validatePayload(createSuburbValidator, request.body);
-
+    // Fetch
     const [exist, cluster, suburbCount] = await Promise.all([
         // Prevent name duplication
         Suburb.exists({ name }),
@@ -27,7 +28,7 @@ const createSuburb = asyncHandler(async (request, response) => {
         Suburb.countDocuments({ clusterId })
     ]);
     
-    // Validate
+    // Validate conditions
     if(exist) throw new ApiError(409, "The suburb with this name has already exist");
     if(!cluster) throw new ApiError(404, "Cluster not found!");
     if(suburbCount >= 3) throw new ApiError(403, `${cluster.name} already have 3 suburbs`);
@@ -78,8 +79,47 @@ const fetchSuburbs = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, suburbs, "Suburbs have been fetched"));
 });
 
+// Update suburbs
+const updateSuburb = asyncHandler(async (request, response) => {
+    const { suburbId } = request.params;
+    if(!isValidObjectId(suburbId)) throw new ApiError(400, "Invalid suburb ID");
+
+    // Get validated payload
+    const { clusterId, name, description } = validatePayload(createSuburbValidator, request.body);
+    
+    // Fetch
+    const [suburb, cluster, suburbCount] = await Promise.all([
+        // Prevent name duplication
+        Suburb.findOne({ name }),
+
+        // Find cluster
+        Cluster.findById(clusterId).select("name").lean(),
+
+        // Get count
+        Suburb.countDocuments({ clusterId })
+    ]);
+    
+    // Validate conditions
+    if(suburb && String(suburb._id) !== String(suburbId)) throw new ApiError(409, "The suburb with this name has already exist");
+    if(!cluster) throw new ApiError(404, "Cluster not found!");
+    if(suburbCount >= 3)
+    {
+        if(String(suburb.clusterId) !== String(clusterId))
+        {
+            throw new ApiError(403, `${cluster.name} already have 3 suburbs`);
+        }
+    }
+
+    // Update
+    const update = await Suburb.findByIdAndUpdate(suburbId, { $set:{ clusterId, name, description } }, { new:true });
+    if(!update) throw new ApiError(400, "Failed to update suburb");
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, null, "Suburb has been updated"));
+});
+
 // Delete suburbs
-const deleteSuburbs = asyncHandler(async (request, response) => {
+const deleteSuburb = asyncHandler(async (request, response) => {
     const { suburbId } = request.params;
     if(!isValidObjectId(suburbId)) throw new ApiError(400, "Invalid suburb ID");
 
@@ -91,4 +131,4 @@ const deleteSuburbs = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, null, "Suburb has been deleted"))
 });
 
-module.exports = { createSuburb, fetchSuburbs, deleteSuburbs };
+module.exports = { createSuburb, fetchSuburbs, updateSuburb, deleteSuburb };
