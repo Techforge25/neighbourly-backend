@@ -114,8 +114,12 @@ const updateSuburb = asyncHandler(async (request, response) => {
     const update = await Suburb.findByIdAndUpdate(suburbId, { $set:{ clusterId, name, description } }, { new:true });
     if(!update) throw new ApiError(400, "Failed to update suburb");
 
+    // Response message
+    let message = `Suburb has been updated`;
+    if(String(clusterId) !== String(suburb.clusterId)) message += ` and assigned to ${cluster.name}`;    
+
     // Response
-    return response.status(200).json(new ApiResponse(200, null, "Suburb has been updated"));
+    return response.status(200).json(new ApiResponse(200, null, message));
 });
 
 // Delete suburbs
