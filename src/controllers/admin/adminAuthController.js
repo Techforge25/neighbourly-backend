@@ -13,8 +13,6 @@ const adminLogin = asyncHandler(async (request, response) => {
     // Get validated payload
     const { username, password } = validatePayload(adminLoginValidationSchema, request.body);
 
-    throw new ApiError(400, "現在、あなたはハッキングされています。Genzai, anata wa hakkingu sareteimasu")
-
     // Find admin
     const admin = await Admin.findOne({ username });
     if(!admin) throw new ApiError(400, "Invalid username or password");
