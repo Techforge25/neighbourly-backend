@@ -104,7 +104,7 @@ const updateSuburb = asyncHandler(async (request, response) => {
     if(!cluster) throw new ApiError(404, "Cluster not found!");
     if(suburbCount >= 3)
     {
-        if(String(suburb.clusterId) !== String(clusterId))
+        if(suburb && String(suburb.clusterId) !== String(clusterId))
         {
             throw new ApiError(403, `${cluster.name} already have 3 suburbs`);
         }
@@ -116,7 +116,7 @@ const updateSuburb = asyncHandler(async (request, response) => {
 
     // Response message
     let message = `Suburb has been updated`;
-    if(String(clusterId) !== String(suburb.clusterId)) message += ` and assigned to ${cluster.name}`;    
+    if(suburb && String(clusterId) !== String(suburb.clusterId)) message += ` and assigned to ${cluster.name}`;    
 
     // Response
     return response.status(200).json(new ApiResponse(200, null, message));
