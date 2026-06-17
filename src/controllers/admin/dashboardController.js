@@ -49,6 +49,7 @@ const fetchTopRecommenderByCategory = asyncHandler(async (request, response) => 
         // Group data
         { 
             $group: { 
+                recommendationId: "$_id",
                 _id: "$business.serviceType", 
                 businessName: { $first: "$business.businessName" },
                 personName: { $first: "$business.personName" },
