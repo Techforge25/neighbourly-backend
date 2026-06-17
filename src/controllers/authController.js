@@ -42,7 +42,7 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
             // Response
             return response.status(200)
             .cookie("accessToken", accessToken, cookieOptions)
-            .json(new ApiResponse(200, { email, OTPRequired:false, isProfileCompleted:user.isProfileCompleted }, "Authenticated"));
+            .json(new ApiResponse(200, { email, OTPRequired:false, isProfileCompleted:user.isProfileCompleted, accessToken }, "Authenticated"));
         }
     }
     else
@@ -106,7 +106,7 @@ const verifyOTP = asyncHandler(async (request, response) => {
     // Response
     return response.status(200)
     .cookie("accessToken", accessToken, cookieOptions)
-    .json(new ApiResponse(200, { email, isProfileCompleted: user.isProfileCompleted }, "Your account has been activated"));
+    .json(new ApiResponse(200, { email, isProfileCompleted: user.isProfileCompleted, accessToken }, "Your account has been activated"));
 });
 
 // User auth check
