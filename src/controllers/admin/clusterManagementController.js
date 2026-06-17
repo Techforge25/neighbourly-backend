@@ -56,6 +56,14 @@ const fetchClusters = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, cluster, "Clusters have been fetched"));
 }); 
 
+// Fetch dropdown clusters
+const fetchDropdownClusters = asyncHandler(async (request, response) => {
+    const clusters = await Cluster.find().select("name").sort("-createdAt").lean();
+
+    // Response
+    return response.status(200).json(new ApiResponse(200, clusters, "Available clusters for dropdown"));
+});
+
 // Update cluster
 const updateCluster = asyncHandler(async (request, response) => {
     const { clusterId } = request.params;
@@ -91,4 +99,4 @@ const deleteCluster = asyncHandler(async (request, response) => {
     return response.status(200).json(new ApiResponse(200, null, "Cluster has been deleted"));
 });
 
-module.exports = { createCluster, fetchClusters, updateCluster, deleteCluster };
+module.exports = { createCluster, fetchClusters, fetchDropdownClusters, updateCluster, deleteCluster };
