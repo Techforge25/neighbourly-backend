@@ -49,7 +49,6 @@ const fetchTopRecommenderByCategory = asyncHandler(async (request, response) => 
         // Group data
         { 
             $group: { 
-                recommendationId: "$_id",
                 _id: "$business.serviceType", 
                 businessName: { $first: "$business.businessName" },
                 personName: { $first: "$business.personName" },
@@ -62,7 +61,7 @@ const fetchTopRecommenderByCategory = asyncHandler(async (request, response) => 
         { $limit: 5 },
 
         // Projection
-        // { $project:{ _id: 0 } }
+        { $project:{ _id: 0 } }
     ]);
     if(!topRecommenders.length) return response.status(200).json(new ApiResponse(200, emptyList, "No recommenders found"));
 
@@ -75,9 +74,9 @@ const fetchRecentPendingRecommendations = asyncHandler(async (request, response)
     const recentPendingRecommendations = await Recommendation.find({ status: "pending" })
     .populate([
         { path: "businessId", select: "businessName" },
-        { path: "userId", select: "address" },
+        { path: "userId", select: "-_id address" },
     ])
-    .sort({ createdAt: -1 }).limit(5).select("-__v -createdAt -updatedAt -status -comment").lean();
+    .sort({ createdAt: -1 }).limit(5).select("-_id -__v -createdAt -updatedAt -status -comment").lean();
     if(!recentPendingRecommendations.length) return response.status(200).json(new ApiResponse(200, emptyList, "No pending recommendations found"));
 
     // Response
