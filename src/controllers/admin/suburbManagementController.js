@@ -72,7 +72,7 @@ const fetchSuburbs = asyncHandler(async (request, response) => {
                 assignedCluster: "$cluster.name"
             }
         }
-    ]);
+    ], { page, limit });
     if(!suburbs.totalDocs) return response.status(200).json(new ApiResponse(200, emptyList, "No suburbs found"));
 
     // Response
