@@ -30,8 +30,9 @@ const fetchSponsors = asyncHandler(async (request, response) => {
     const { page = 1, limit = 10, suburb } = request.query;
 
     // Base filter
-    const filter = {};
-    if(suburb) filter.suburb = suburb;
+    let filter = {};
+    if(!suburb || ["all", "All"].includes(suburb)) filter = {};
+    if(suburb && !["all", "All"].includes(suburb)) filter.suburb = suburb;
 
     // Fetch
     const sponsors = await Sponsor.aggregatePaginate([
