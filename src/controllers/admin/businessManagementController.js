@@ -41,7 +41,7 @@ const fetchBusinesses = asyncHandler(async (request, response) => {
         },
 
         // Match
-        { $match: filter },        
+        { $match: filter },          
 
         // Add computed fields
         {
@@ -82,7 +82,7 @@ const fetchBusinesses = asyncHandler(async (request, response) => {
         },
 
         // Sort
-        { $sort:{ createdAt: -1 } },
+        { $sort:{ createdAt: -1 } },           
 
         // Projection
         {
@@ -95,7 +95,7 @@ const fetchBusinesses = asyncHandler(async (request, response) => {
                 trustPoints: 1,
                 totalRecommendations: "$recommendationCount"
             }
-        }
+        },      
     ], { page, limit });
     if(!businesses.totalDocs) return response.status(200).json(new ApiResponse(200, emptyList, "No businesses found"));
 

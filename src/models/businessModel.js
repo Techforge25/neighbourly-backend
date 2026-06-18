@@ -11,7 +11,7 @@ const businessSchema = new Schema({
 
     // Recommendation count
     recommendationCount: { type:Number, default: 0 }
-});
+}, { timestamps:true });
 
 // Pagination plugin
 businessSchema.plugin(aggregatePaginate);
