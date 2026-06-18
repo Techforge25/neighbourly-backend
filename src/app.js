@@ -22,6 +22,7 @@ const recommendationRouter = require("./routes/recommendationRoute");
 const getInTouchRouter = require("./routes/getInTouchRoute");
 const statsRouter = require("./routes/statsRoute");
 const sponsorRoute = require("./routes/sponsorRoute");
+const suburbRouter = require("./routes/suburbRoute");
 
 // Registered Routes
 app.use("/api/v1/auth", authRouter);
@@ -29,6 +30,7 @@ app.use("/api/v1/recommendation", recommendationRouter);
 app.use("/api/v1/getInTouch", getInTouchRouter);
 app.use("/api/v1/stats", statsRouter);
 app.use("/api/v1/sponsor", sponsorRoute);
+app.use("/api/v1/suburb", suburbRouter);
 
 // Import Admin Routes
 const adminAuthRouter = require("./routes/admin/adminAuthRoute");
