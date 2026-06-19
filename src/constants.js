@@ -1,12 +1,15 @@
 // Port and environment
 const port = process.env.PORT || 8001;
 const isProduction = process.env.NODE_ENV === "production";
-const frontendUrl = isProduction ? process.env.FRONTEND_URL : "http://localhost:3000";
+const isStaging = process.env.NODE_ENV === "staging";
+const isLocal = process.env.NODE_ENV === "development";
+const frontendUrl = process.env.FRONTEND_URL;
 
 // Cors options
 const corsOptions = {
     origin:[
         process.env.ORIGIN, 
+        frontendUrl,
         "http://localhost:3000", 
         "https://www.suburbsays.com.au", 
         "https://neighbourly-admin-panel-frontend.vercel.app",
@@ -19,13 +22,11 @@ const corsOptions = {
 
 // Cookie options
 const cookieOptions = {
-    httpOnly:true,
-    secure: isProduction,
+    httpOnly: true,
+    secure: !isLocal,
     signed: true,
     maxAge: 1000 * 60 * 60 * 24 * 90,
-    sameSite: isProduction ? "none" : "lax",
-    // domain: ".beneighbourly.com.au",
-    // path: "/"
+    sameSite: isLocal ? "lax" : "none"
 };
 
 // Empty list
