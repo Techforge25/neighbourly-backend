@@ -9,14 +9,109 @@ const validatePayload = require("../../utils/validatePayload");
 const Recommendation = require("../../models/recommendationsModel");
 
 // Fetch all businesses
+// const fetchBusinesses = asyncHandler(async (request, response) => {
+//     const { page = 1, limit = 10, trade, suburb, search } = request.query;
+
+//     // Base filter
+//     const filter = { recommendationCount: { $gte: 1 } };
+//     if(trade) filter.serviceType = trade;
+//     if(suburb) filter["users.address"] = suburb;
+//     if(search) filter["businessName"] = { $regex: search, $options: "i" };    
+
+//     // Aggregation pipeline
+//     const businesses = await Business.aggregatePaginate([
+//         // Lookup recommendations
+//         {
+//             $lookup: {
+//                 from: "recommendations",
+//                 localField: "_id",
+//                 foreignField: "businessId",
+//                 as: "recommendations"
+//             }
+//         },
+
+//         // Lookup users from recommendations
+//         {
+//             $lookup: {
+//                 from: "users",
+//                 localField: "recommendations.userId",
+//                 foreignField: "_id",
+//                 as: "users"
+//             }
+//         },
+
+//         // Match
+//         { $match: filter },          
+
+//         // Add computed fields
+//         {
+//             $addFields: {               
+//                 // Trusted in (addresses)
+//                 trustedIn: {
+//                     $setUnion: [
+//                         {
+//                             $map: {
+//                                 input: "$users",
+//                                 as: "user",
+//                                 in: "$$user.address"
+//                             }
+//                         },
+//                         []
+//                     ]
+//                 },
+
+//                 // Trust points
+//                 trustPoints: {
+//                     $setUnion: [
+//                         {
+//                             $reduce: {
+//                                 input: "$recommendations",
+//                                 initialValue: [],
+//                                 in: {
+//                                     $concatArrays: [
+//                                         "$$value",
+//                                         "$$this.reasonsOfRecommendation"
+//                                     ]
+//                                 }
+//                             }
+//                         },
+//                         []
+//                     ]
+//                 }
+//             }
+//         },
+
+//         // Sort
+//         { $sort:{ createdAt: -1 } },           
+
+//         // Projection
+//         {
+//             $project: {
+//                 _id: 1,
+//                 personName: 1,
+//                 businessName: 1,
+//                 tradeCategory: "$serviceType",
+//                 trustedIn: 1,
+//                 trustPoints: 1,
+//                 totalRecommendations: "$recommendationCount"
+//             }
+//         },      
+//     ], { page, limit });
+//     if(!businesses.totalDocs) return response.status(200).json(new ApiResponse(200, emptyList, "No businesses found"));
+
+//     // Response
+//     return response.status(200).json(new ApiResponse(200, businesses, "Businesses fetched successfully"));
+// });
+
+// Fetch all businesses (V2)
 const fetchBusinesses = asyncHandler(async (request, response) => {
     const { page = 1, limit = 10, trade, suburb, search } = request.query;
 
     // Base filter
-    const filter = { recommendationCount: { $gte: 1 } };
+    const filter = {};
     if(trade) filter.serviceType = trade;
     if(suburb) filter["users.address"] = suburb;
-    if(search) filter["businessName"] = { $regex: search, $options: "i" };    
+    if(search) filter["businessName"] = { $regex: search, $options: "i" };
 
     // Aggregation pipeline
     const businesses = await Business.aggregatePaginate([
@@ -24,11 +119,20 @@ const fetchBusinesses = asyncHandler(async (request, response) => {
         {
             $lookup: {
                 from: "recommendations",
-                localField: "_id",
-                foreignField: "businessId",
+                let: { businessId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $eq: ["$businessId", "$$businessId"]
+                            },
+                            status: "approved"
+                        }
+                    }
+                ],
                 as: "recommendations"
             }
-        },
+        },        
 
         // Lookup users from recommendations
         {
@@ -40,12 +144,14 @@ const fetchBusinesses = asyncHandler(async (request, response) => {
             }
         },
 
-        // Match
-        { $match: filter },          
-
         // Add computed fields
         {
-            $addFields: {               
+            $addFields: {
+                // Recommendation count from Recommendation collection
+                recommendationCount: {
+                    $size: "$recommendations"
+                },
+
                 // Trusted in (addresses)
                 trustedIn: {
                     $setUnion: [
@@ -81,8 +187,11 @@ const fetchBusinesses = asyncHandler(async (request, response) => {
             }
         },
 
+        // Match
+        { $match: { ...filter, recommendationCount: { $gte: 1 } } },
+
         // Sort
-        { $sort:{ createdAt: -1 } },           
+        { $sort: { createdAt: -1 } },
 
         // Projection
         {
@@ -95,8 +204,9 @@ const fetchBusinesses = asyncHandler(async (request, response) => {
                 trustPoints: 1,
                 totalRecommendations: "$recommendationCount"
             }
-        },      
+        }
     ], { page, limit });
+
     if(!businesses.totalDocs) return response.status(200).json(new ApiResponse(200, emptyList, "No businesses found"));
 
     // Response

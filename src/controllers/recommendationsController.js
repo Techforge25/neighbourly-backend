@@ -232,36 +232,117 @@ const createRecommendationWithUserInfo = asyncHandler(async (request, response) 
 // });
 
 // Fetch recommendation (Update V2)
+// const fetchRecommendations = asyncHandler(async (request, response) => {
+//     let { page = 1, limit = 6, filter, location } = request.query;
+
+//     // Show list flag
+//     let showFullList = true;
+
+//     // Get all suburbs belonging to the selected suburb's cluster
+//     let clusterSuburbs = [];
+
+//     if(location) 
+//     {
+//         // Find suburb
+//         const suburb = await Suburb.findOne({ name: location }).select("clusterId").lean();
+//         if(!suburb) throw new ApiError(404, "No suburb found associated with this name");
+//         clusterSuburbs = await Suburb.find({ clusterId: suburb.clusterId }).distinct("name");
+//     }
+
+//     // Base filter
+//     const baseFilter = { status: "approved" };
+//     if(filter) baseFilter["business.serviceType"] = { $regex: filter, $options: "i" };
+    
+//     // Aggregation
+//     const recommendations = await Recommendation.aggregatePaginate([
+//         // Business lookup
+//         {
+//             $lookup: {
+//                 from: "businesses",
+//                 localField: "businessId",
+//                 foreignField: "_id",
+//                 as: "business"
+//             }
+//         },
+
+//         // User lookup
+//         {
+//             $lookup: {
+//                 from: "users",
+//                 localField: "userId",
+//                 foreignField: "_id",
+//                 as: "user"
+//             }
+//         },
+
+//         // Unwind
+//         { $unwind: { path: "$business", preserveNullAndEmptyArrays: true } },
+//         { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+
+//         // Match approved recommendations
+//         { $match: { ...baseFilter, "business.recommendationCount": { $gte: 3 } } },
+
+//         // Group by business
+//         {
+//             $group: {
+//                 _id: "$business._id",
+
+//                 businessId: { $first: "$business._id" },
+//                 personName: { $first: "$business.personName" },
+//                 businessName: { $first: "$business.businessName" },
+//                 businessContact: { $first: "$business.contact" },
+//                 serviceType: { $first: "$business.serviceType" },
+//                 addresses: { $addToSet: "$user.address" },
+
+//                 // Recommendation count
+//                 recommendationCount: {
+//                     $sum: {
+//                         $cond: [
+//                             location
+//                                 ? 
+//                                 { $in: ["$user.address", clusterSuburbs] }
+//                                 : true,
+//                             1,
+//                             0
+//                         ]
+//                     }
+//                 },
+
+//                 reasonsOfRecommendation: { $push: "$reasonsOfRecommendation" },
+//                 createdAt: { $first: "$business.createdAt" }
+//             }
+//         },
+
+//         // When location selected, only show businesses
+//         // having recommendations from that cluster
+//         ...(location
+//             ? [
+//                   {
+//                       $match: {
+//                           recommendationCount: { $gt: 0 }
+//                       }
+//                   }
+//               ]
+//             : []),
+
+//         // Sort
+//         { $sort: { recommendationCount: -1, createdAt: -1, businessId: 1 } },
+
+//         // Final projection
+//         { $project: { _id: 0, createdAt: 0 } }
+//     ], { page, limit });
+//     if(!recommendations.totalDocs) return response.status(200).json(new ApiResponse(200, { ...emptyList, showFullList },"No recommendations found"));
+    
+//     // Response
+//     return response.status(200).json(new ApiResponse(200, { recommendations, showFullList }, "Recommendations have been fetched"));
+// });
+
+// Fetch recommendation (Update V3)
 const fetchRecommendations = asyncHandler(async (request, response) => {
     let { page = 1, limit = 6, filter, location } = request.query;
 
     // Show list flag
     let showFullList = true;
-
-    // // If not logged-in
-    // if(!request.user)
-    // {
-    //     page = 1;
-    //     limit = 3;
-    //     showFullList = false;
-    // }
-    // else
-    // {
-    //     const userId = request.user._id;
-    //     const user = await User.findOne({
-    //         _id: userId,
-    //         isProfileCompleted: true
-    //     })
-    //     .select("isProfileCompleted")
-    //     .lean();
-
-    //     if(!user)
-    //     {
-    //         page = 1;
-    //         limit = 3;
-    //         showFullList = false;
-    //     }
-    // }
 
     // Get all suburbs belonging to the selected suburb's cluster
     let clusterSuburbs = [];
@@ -271,13 +352,14 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
         // Find suburb
         const suburb = await Suburb.findOne({ name: location }).select("clusterId").lean();
         if(!suburb) throw new ApiError(404, "No suburb found associated with this name");
+
         clusterSuburbs = await Suburb.find({ clusterId: suburb.clusterId }).distinct("name");
     }
 
     // Base filter
     const baseFilter = { status: "approved" };
     if(filter) baseFilter["business.serviceType"] = { $regex: filter, $options: "i" };
-    
+
     // Aggregation
     const recommendations = await Recommendation.aggregatePaginate([
         // Business lookup
@@ -305,7 +387,7 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
         { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
 
         // Match approved recommendations
-        { $match: { ...baseFilter, "business.recommendationCount": { $gte: 3 } } },
+        { $match: baseFilter },
 
         // Group by business
         {
@@ -319,14 +401,19 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
                 serviceType: { $first: "$business.serviceType" },
                 addresses: { $addToSet: "$user.address" },
 
-                // Recommendation count
-                recommendationCount: {
+                // Total recommendations for business
+                totalRecommendationCount: { $sum: 1 },
+
+                // Recommendations from selected cluster
+                clusterRecommendationCount: {
                     $sum: {
                         $cond: [
-                            location
-                                ? 
-                                { $in: ["$user.address", clusterSuburbs] }
-                                : true,
+                            {
+                                $and: [
+                                    { $ne: [location, null] },
+                                    { $in: ["$user.address", clusterSuburbs] }
+                                ]
+                            },
                             1,
                             0
                         ]
@@ -338,26 +425,33 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
             }
         },
 
-        // When location selected, only show businesses
-        // having recommendations from that cluster
-        ...(location
-            ? [
-                  {
-                      $match: {
-                          recommendationCount: { $gt: 0 }
-                      }
-                  }
-              ]
-            : []),
+        // Use cluster count when location selected otherwise total count
+        {
+            $addFields: {
+                recommendationCount: location
+                    ? "$clusterRecommendationCount"
+                    : "$totalRecommendationCount"
+            }
+        },
+
+        // Only show businesses having at least 3 recommendations
+        { $match: { recommendationCount: { $gte: 3 } } },
 
         // Sort
         { $sort: { recommendationCount: -1, createdAt: -1, businessId: 1 } },
 
         // Final projection
-        { $project: { _id: 0, createdAt: 0 } }
+        {
+            $project: {
+                _id: 0,
+                createdAt: 0,
+                totalRecommendationCount: 0,
+                clusterRecommendationCount: 0
+            }
+        }
     ], { page, limit });
-    if(!recommendations.totalDocs) return response.status(200).json(new ApiResponse(200, { ...emptyList, showFullList },"No recommendations found"));
-    
+    if(!recommendations.totalDocs) return response.status(200).json(new ApiResponse(200, { ...emptyList, showFullList }, "No recommendations found"));
+
     // Response
     return response.status(200).json(new ApiResponse(200, { recommendations, showFullList }, "Recommendations have been fetched"));
 });
