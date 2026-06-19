@@ -29,7 +29,7 @@ const createSuburb = asyncHandler(async (request, response) => {
     ]);
     
     // Validate conditions
-    if(exist) throw new ApiError(409, "The suburb with this name has already exist");
+    if(exist) throw new ApiError(409, "The suburb with this name already exist");
     if(!cluster) throw new ApiError(404, "Cluster not found!");
     if(suburbCount >= 3) throw new ApiError(403, `${cluster.name} already have 3 suburbs`);
 
@@ -100,7 +100,7 @@ const updateSuburb = asyncHandler(async (request, response) => {
     ]);
     
     // Validate conditions
-    if(suburb && String(suburb._id) !== String(suburbId)) throw new ApiError(409, "The suburb with this name has already exist");
+    if(suburb && String(suburb._id) !== String(suburbId)) throw new ApiError(409, "The suburb with this name already exist");
     if(!cluster) throw new ApiError(404, "Cluster not found!");
     if(suburbCount >= 3)
     {

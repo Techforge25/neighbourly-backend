@@ -15,7 +15,7 @@ const createCluster = asyncHandler(async (request, response) => {
 
     // Prevent name duplication
     const exist = await Cluster.exists({ name });
-    if(exist) throw new ApiError(409, "The cluster with this name has already exist");
+    if(exist) throw new ApiError(409, "The cluster with this name already exist");
     
     // Save to db
     const cluster = await Cluster.create({ name, description });
@@ -76,7 +76,7 @@ const updateCluster = asyncHandler(async (request, response) => {
     const cluster = await Cluster.findOne({ name });
 
     // Prevent name duplication
-    if(cluster && String(clusterId) !== String(cluster._id)) throw new ApiError(400, "The cluster with this name has already exist");
+    if(cluster && String(clusterId) !== String(cluster._id)) throw new ApiError(400, "The cluster with this name already exist");
     
     // Update
     const update = await Cluster.findByIdAndUpdate(clusterId, { $set:{ name, description } });
