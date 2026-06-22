@@ -15,9 +15,9 @@ clusterManagementRoute.route("/")
 clusterManagementRoute.route("/dropdown")
 .get(adminAuthentication, fetchDropdownClusters);
 
-// Update / Delete cluster
+// Update cluster
 clusterManagementRoute.route("/:clusterId")
-.put(adminAuthentication, updateCluster)
-.delete(adminAuthentication, deleteCluster);
+.put(adminAuthentication, updateCluster);
+// .delete(adminAuthentication, deleteCluster);
 
 module.exports = clusterManagementRoute;
