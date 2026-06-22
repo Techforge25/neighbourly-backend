@@ -12,7 +12,7 @@ suburbManagementRoute.route("/")
 
 // Update suburb
 suburbManagementRoute.route("/:suburbId")
-.put(adminAuthentication, updateSuburb);
-// .delete(adminAuthentication, deleteSuburb);
+.put(adminAuthentication, updateSuburb)
+.delete(adminAuthentication, deleteSuburb);
 
 module.exports = suburbManagementRoute;
