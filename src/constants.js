@@ -13,7 +13,8 @@ const corsOptions = {
         "http://localhost:3000", 
         "https://www.suburbsays.com.au", 
         "https://neighbourly-admin-panel-frontend.vercel.app",
-        "https://admin.suburbsays.com.au"
+        "https://admin.suburbsays.com.au",
+        "http://192.168.1.9:3000"
     ],
     credentials:true,
     methods:["GET", "POST", "PUT", "PATCH", "DELETE"],
