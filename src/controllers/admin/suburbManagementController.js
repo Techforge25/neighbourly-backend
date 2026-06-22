@@ -19,7 +19,8 @@ const createSuburb = asyncHandler(async (request, response) => {
     // Fetch
     const [exist, cluster, suburbCount] = await Promise.all([
         // Prevent name duplication
-        Suburb.exists({ name }),
+        // Suburb.exists({ name }),
+        Suburb.exists({ name: { $regex: `^${name.trim()}$`, $options: "i" } }),
 
         // Find cluster
         Cluster.findById(clusterId).select("name").lean(),
@@ -90,7 +91,8 @@ const updateSuburb = asyncHandler(async (request, response) => {
     // Fetch
     const [suburb, cluster, suburbCount] = await Promise.all([
         // Prevent name duplication
-        Suburb.findOne({ name }),
+        // Suburb.findOne({ name }),
+        Suburb.findOne({ name: { $regex: `^${name.trim()}$`, $options: "i" } }),
 
         // Find cluster
         Cluster.findById(clusterId).select("name").lean(),
