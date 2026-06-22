@@ -14,6 +14,7 @@ const authentication = asyncHandler(async (request, response, next) => {
 
     // Pass through
     request.user = user;
+    request.user.accessToken = accessToken;
     return next();
 });
 

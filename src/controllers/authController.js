@@ -111,10 +111,10 @@ const verifyOTP = asyncHandler(async (request, response) => {
 
 // User auth check
 const userAuthCheck = asyncHandler(async (request, response) => {
-    const { _id:userId, role } = request.user;
+    const { _id:userId, role, accessToken } = request.user;
 
     // Response
-    return response.status(200).json(new ApiResponse(200, { userId, role }, "Authenticated!"));
+    return response.status(200).json(new ApiResponse(200, { userId, role, accessToken }, "Authenticated!"));
 });
 
 module.exports = { userRegistrationCheck, verifyOTP, userAuthCheck };
