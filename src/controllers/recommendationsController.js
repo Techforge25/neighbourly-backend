@@ -383,7 +383,7 @@ const fetchRecommendations = asyncHandler(async (request, response) => {
         },
 
         // Unwind
-        { $unwind: { path: "$business", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$business", preserveNullAndEmptyArrays: false } }, // To hide deleted business
         { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
 
         // Match approved recommendations
