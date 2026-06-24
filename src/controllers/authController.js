@@ -17,8 +17,8 @@ const userRegistrationCheck = asyncHandler(async (request, response) => {
 
     // Generate OTP token & expiry
     const { code:accountVerificationToken } = generateCode(6);
-    // const accountVerificationTokenExpires = Date.now() + 1 * 60 * 1000;
-    const accountVerificationTokenExpires = Date.now() + 65 * 1000;
+    const accountVerificationTokenExpires = Date.now() + 2 * 60 * 1000;
+    // const accountVerificationTokenExpires = Date.now() + 65 * 1000;
     if(!accountVerificationToken) throw new ApiError(500, "Failed to generate OTP");      
 
     // Get user if exist
